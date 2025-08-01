@@ -1,0 +1,21 @@
+[project]
+name = "ldaca"
+version = "0.1.0"
+description = "LDaCA - Language Data Commons of Australia ecosystem for text analysis"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "docframe",
+    "docworkspace",
+]
+
+[tool.uv.workspace]
+members = [
+    "docframe",
+    "docworkspace", 
+    "ldaca_web_app/backend"
+]
+
+[tool.uv.sources]
+docframe = { workspace = true }
+docworkspace = { workspace = true }

@@ -1,0 +1,9 @@
+[submodule "ldaca_web_app"]
+	path = ldaca_web_app
+	url = git@github.sydney.edu.au:informatics/ldaca_web_app.git
+[submodule "docframe"]
+	path = docframe
+	url = git@github.sydney.edu.au:informatics/docframe.git
+[submodule "docworkspace"]
+	path = docworkspace
+	url = git@github.sydney.edu.au:informatics/docworkspace.git
