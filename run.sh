@@ -59,6 +59,16 @@ trap cleanup EXIT INT TERM
 # Check prerequisites
 print_status "Checking prerequisites..."
 
+# Initialize submodules if needed
+print_status "Checking git submodules..."
+if [ ! -f "docframe/pyproject.toml" ] || [ ! -f "docworkspace/pyproject.toml" ] || [ ! -f "ldaca_web_app/backend/main.py" ]; then
+    print_status "Initializing git submodules..."
+    git submodule update --init --recursive
+    print_success "Git submodules initialized"
+else
+    print_success "Git submodules already initialized"
+fi
+
 if ! command_exists uv; then
     print_error "uv is not installed. Please install it first:"
     print_error "curl -LsSf https://astral.sh/uv/install.sh | sh"
@@ -90,6 +100,8 @@ print_status "Installing LDaCA workspace dependencies..."
 cd "$SCRIPT_DIR"
 if [ -f "pyproject.toml" ]; then
     uv sync
+    uv pip install -e docframe
+    uv pip install -e docworkspace
     print_success "All workspace dependencies installed"
 else
     print_error "No pyproject.toml found in root directory"
@@ -165,7 +177,7 @@ fi
 
 # Start backend in background using workspace uv
 cd "$SCRIPT_DIR"
-uv run --package ldaca-backend fastapi dev ldaca_web_app/backend/main.py --host 0.0.0.0 --port 8001 > "$BACKEND_DIR/backend.log" 2>&1 &
+uv run --package ldaca-backend fastapi dev ldaca_web_app/backend/main.py --port 8001 > "$BACKEND_DIR/backend.log" 2>&1 &
 BACKEND_PID=$!
 
 # Wait a moment for backend to start
