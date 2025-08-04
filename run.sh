@@ -175,9 +175,9 @@ if [ ! -f "$BACKEND_DIR/main.py" ]; then
     exit 1
 fi
 
-# Start backend in background using workspace uv
-cd "$SCRIPT_DIR"
-uv run --package ldaca-backend fastapi dev ldaca_web_app/backend/main.py --port 8001 > "$BACKEND_DIR/backend.log" 2>&1 &
+# Start backend in background using the project's virtual environment
+cd "$BACKEND_DIR"
+uv run --package ldaca-backend fastapi dev main.py --port 8001 > backend.log 2>&1 &
 BACKEND_PID=$!
 
 # Wait a moment for backend to start
