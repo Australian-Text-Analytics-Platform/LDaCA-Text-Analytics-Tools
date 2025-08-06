@@ -37,6 +37,9 @@ cd ldaca_web_app/frontend && npm test   # Frontend tests
 # Running full stack (separate terminals)
 cd backend && python main.py            # Backend (port 8001)
 cd frontend && npm start                 # Frontend (port 3000)
+
+# Running python commands
+uv run python -c "XXX" # Use uv for python commands
 ```
 
 ## Key Architectural Patterns
@@ -81,7 +84,7 @@ graph = workspace.to_api_graph()  # React Flow compatible JSON
 3. Test full React Flow integration with browser automation
 
 ### Available Development Tools
-- **Playwright MCP**: End-to-end browser testing and user interaction simulation
+- **Playwright MCP**: End-to-end browser testing and user interaction simulation, you can use it to see the frontend as well as the console logs.
 - **Context7 MCP**: Latest documentation for React Flow, Zustand, TanStack Query
 - **Memory MCP**: Context management for long/complicated tasks
 - **Sequential Thinking MCP**: Structured problem-solving approach
