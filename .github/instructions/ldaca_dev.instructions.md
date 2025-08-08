@@ -1,5 +1,5 @@
 ---
-applyTo: '**'
+applyTo: '**/*ldaca*/**'
 ---
 
 # LDaCA Ecosystem Development Guide
