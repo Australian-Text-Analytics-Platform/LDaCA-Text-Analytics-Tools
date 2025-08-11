@@ -169,3 +169,20 @@ Each layer has distinct testing approaches:
 Always test integration points between layers to catch JSON serialization and cross-library compatibility issues. Delete temporary test files after validation, keep only necessary tests in the suite.
 
 Update this instructions as new changes are made to the architecture or development patterns. Document new patterns and workflows immediately after implementation to ensure clarity for all developers.
+
+### Workspace Lifecycle Management
+
+Workspaces are cached per-user in memory by `WorkspaceManager`. To reduce memory footprint you can explicitly unload a workspace (persist then remove from memory). After unloading, the next access will transparently lazy-load it from disk.
+
+API:
+`POST /api/workspaces/{workspace_id}/unload?save=true` (default save=true)
+
+Behavior:
+- If `save=true` the workspace is serialized (JSON) before removal.
+- In-memory reference is deleted; current workspace pointer cleared if it was the unloaded one.
+- Returns 404 only if neither an in-memory instance nor an on-disk file exists.
+- Subsequent calls to any endpoint that needs the workspace will trigger disk load.
+
+Use Cases:
+- Free RAM when working with many large workspaces.
+- Force reload from persisted state after manual file edits (advanced/debug scenarios).
