@@ -27,6 +27,13 @@ jobs:
           rm -f binder/Dockerfile
         fi
 
+    - name: Derive lowercase image name
+      run: |
+        REPO_NAME="${GITHUB_REPOSITORY#*/}"
+        REPO_NAME_LC="$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]')"
+        echo "REPO_NAME_LC=$REPO_NAME_LC" >> $GITHUB_ENV
+        echo "IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME_LC" >> $GITHUB_ENV
+
     - name: Build and push with repo2docker (Docker Hub)
       id: r2d
       uses: jupyterhub/repo2docker-action@master
@@ -34,14 +41,14 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
         DOCKER_REGISTRY: docker.io
-        IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+        IMAGE_NAME: ${{ env.IMAGE_NAME }}
         # Do not set BINDER_CACHE (Quay-specific)
 
     - name: Compute short SHA and image ref
       run: |
         SHORT_SHA="${GITHUB_SHA::12}"
         echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
-        echo "IMAGE_REF=${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:$SHORT_SHA" >> $GITHUB_ENV
+        echo "IMAGE_REF=${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME_LC:$SHORT_SHA" >> $GITHUB_ENV
 
     - name: Restore binder/Dockerfile and update FROM tag (preserve COPY lines)
       run: |
@@ -51,7 +58,6 @@ jobs:
           echo "# Github Action Built Image" > binder/Dockerfile
           echo "FROM $IMAGE_REF" >> binder/Dockerfile
         fi
-        # Replace only the first FROM line with the new image ref
         sed -E -i '1,/^FROM / s|^FROM .*$|FROM '"$IMAGE_REF"'|' binder/Dockerfile
         echo "Updated FROM in binder/Dockerfile to $IMAGE_REF"
 
