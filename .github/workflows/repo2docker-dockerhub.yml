@@ -1,0 +1,70 @@
+name: repo2docker-dockerhub
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-push:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Back up and remove binder/Dockerfile for CI build
+      run: |
+        if [ -f binder/Dockerfile ]; then
+          echo "Backing up binder/Dockerfile then removing for CI build so repo2docker copies repo contents"
+          cp binder/Dockerfile binder/Dockerfile.ci.bak
+          rm -f binder/Dockerfile
+        fi
+
+    - name: Derive lowercase image name
+      run: |
+        REPO_NAME="${GITHUB_REPOSITORY#*/}"
+        REPO_NAME_LC="$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]')"
+        echo "REPO_NAME_LC=$REPO_NAME_LC" >> $GITHUB_ENV
+        echo "IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME_LC" >> $GITHUB_ENV
+
+    - name: Build and push with repo2docker (Docker Hub)
+      id: r2d
+      uses: jupyterhub/repo2docker-action@master
+      with:
+        DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+        DOCKER_REGISTRY: docker.io
+        IMAGE_NAME: ${{ env.IMAGE_NAME }}
+        # Do not set BINDER_CACHE (Quay-specific)
+
+    - name: Compute short SHA and image ref
+      run: |
+        SHORT_SHA="${GITHUB_SHA::12}"
+        echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+        echo "IMAGE_REF=${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME_LC:$SHORT_SHA" >> $GITHUB_ENV
+
+    - name: Restore binder/Dockerfile and update FROM tag (preserve COPY lines)
+      run: |
+        if [ -f binder/Dockerfile.ci.bak ]; then
+          mv -f binder/Dockerfile.ci.bak binder/Dockerfile
+        else
+          echo "# Github Action Built Image" > binder/Dockerfile
+          echo "FROM $IMAGE_REF" >> binder/Dockerfile
+        fi
+        # Replace only the first FROM line with the new image ref
+        sed -E -i '1,/^FROM / s|^FROM .*$|FROM '"$IMAGE_REF"'|' binder/Dockerfile
+        echo "Updated FROM in binder/Dockerfile to $IMAGE_REF"
+
+    - name: Commit binder/Dockerfile
+      uses: EndBug/add-and-commit@v9
+      with:
+        add: binder/Dockerfile
+        message: "chore: update Binder base image tag"
+        default_author: github_actions
