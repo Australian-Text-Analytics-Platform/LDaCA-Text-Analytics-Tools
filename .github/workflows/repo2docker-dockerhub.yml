@@ -13,6 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    - name: Update submodules to latest remote HEAD
+      run: |
+        echo "Fetching latest commits for submodules";
+        # For each submodule fetch origin and fast-forward to its remote HEAD branch
+        git submodule foreach 'git fetch origin --prune';
+        # Attempt to detect and use the remote HEAD (works if origin/HEAD is set)
+        git submodule foreach 'HEADBR=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed s@^refs/remotes/origin/@@); if [ -n "$HEADBR" ]; then git checkout "$HEADBR" || true; git reset --hard "origin/$HEADBR"; else echo "No origin/HEAD symbolic ref, leaving as-is"; fi';
+        echo "Final submodule status:";
+        git submodule status --recursive
 
     - name: Set up Python
       uses: actions/setup-python@v5
