@@ -1,9 +1,9 @@
 [submodule "ldaca_web_app"]
 	path = ldaca_web_app
-	url = git@github.com:Australian-Text-Analytics-Platform/ldaca_web_app.git
+	url = https://github.com/Australian-Text-Analytics-Platform/ldaca_web_app.git
 [submodule "docframe"]
 	path = docframe
-	url = git@github.com:Australian-Text-Analytics-Platform/docframe.git
+	url = https://github.com/Australian-Text-Analytics-Platform/docframe.git
 [submodule "docworkspace"]
 	path = docworkspace
-	url = git@github.com:Australian-Text-Analytics-Platform/docworkspace.git
+	url = https://github.com/Australian-Text-Analytics-Platform/docworkspace.git
