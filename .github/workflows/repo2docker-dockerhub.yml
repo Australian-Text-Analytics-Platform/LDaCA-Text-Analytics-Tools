@@ -71,25 +71,63 @@ jobs:
         fi
         sed -E -i '1,/^FROM / s|^FROM .*$|FROM '"$IMAGE_REF"'|' binder/Dockerfile
         echo "Updated FROM in binder/Dockerfile to $IMAGE_REF"
-
-    - name: Pull latest changes and rebase
-      run: |
-        git fetch origin
-        git rebase origin/main
-        
-    - name: Commit binder/Dockerfile
-      uses: EndBug/add-and-commit@v9
-      with:
-        add: binder/Dockerfile
-        message: "chore: update Binder base image tag"
-        default_author: github_actions
-
-
     - name: Append submodule hashes and commit URLs to Dockerfile
       run: |
         echo "# Submodule hashes and commit URLs for this build:" >> binder/Dockerfile
-        for submodule in $(git config --file .gitmodules --get-regexp path | awk '{print $2}'); do
-          hash=$(git -C "$submodule" rev-parse HEAD)
-          url=$(git config --file .gitmodules --get-regexp "submodule.$submodule.url" | awk '{print $2}')
-          echo "# $submodule: $hash $url/tree/$hash" >> binder/Dockerfile
+        if [ -f .gitmodules ]; then
+          for submodule in $(git config --file .gitmodules --get-regexp path | awk '{print $2}'); do
+            if [ -d "$submodule/.git" ]; then
+              hash=$(git -C "$submodule" rev-parse HEAD || echo "UNKNOWN")
+              url=$(git config --file .gitmodules --get-regexp "submodule.$submodule.url" | awk '{print $2}')
+              # Normalize common SSH/HTTPS forms to https://github.com/owner/repo
+              norm_url=$url
+              if echo "$norm_url" | grep -q '^git@github.com:'; then
+                norm_url=https://github.com/$(echo "$norm_url" | sed 's#git@github.com:##; s#\.git$##')
+              fi
+              if echo "$norm_url" | grep -q '^https://github.com/'; then
+                echo "# $submodule: $hash $norm_url/tree/$hash" >> binder/Dockerfile
+              else
+                echo "# $submodule: $hash $url (non-GitHub URL)" >> binder/Dockerfile
+              fi
+            else
+              echo "# $submodule: (missing .git directory)" >> binder/Dockerfile
+            fi
+          done
+        else
+          echo "# (No submodules)" >> binder/Dockerfile
+        fi
+
+    - name: Commit and push binder/Dockerfile with rebase & retry
+      env:
+        GIT_AUTHOR_NAME: github-actions
+        GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        GIT_COMMITTER_NAME: github-actions
+        GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+      run: |
+        set -euo pipefail
+        git add binder/Dockerfile
+        if git diff --cached --quiet; then
+          echo "No changes to commit in binder/Dockerfile"; exit 0; fi
+        attempts=5
+        for i in $(seq 1 $attempts); do
+          echo "Attempt $i to rebase & push..."
+          git fetch origin
+          # Ensure on main
+            git checkout main
+          # Rebase onto latest remote main
+          if ! git rebase origin/main; then
+            echo "Rebase failed (conflict). Aborting."; git rebase --abort || true; exit 1; fi
+          # Create / amend commit (if commit already exists from previous loop)
+          if git diff --cached --quiet; then
+            echo "Nothing staged after rebase; maybe already upstream"; exit 0; fi
+          if git log -1 --pretty=%B | grep -q 'chore: update Binder base image tag'; then
+            git commit --amend -m "chore: update Binder base image tag" || true
+          else
+            git commit -m "chore: update Binder base image tag"
+          fi
+          if git push origin HEAD:main; then
+            echo "Push succeeded"; exit 0; fi
+          echo "Push failed (non-fast-forward likely). Retrying after backoff...";
+          sleep $((5 * i))
         done
+        echo "Failed to push after $attempts attempts"; exit 1
