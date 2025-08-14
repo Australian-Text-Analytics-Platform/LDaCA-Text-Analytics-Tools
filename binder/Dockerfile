@@ -1,2 +1,2 @@
 # Github Action Built Image
-FROM milysun/ldaca-text-analytics-tools:e53ea8333650
+FROM milysun/ldaca-text-analytics-tools:07b456d0a86b
