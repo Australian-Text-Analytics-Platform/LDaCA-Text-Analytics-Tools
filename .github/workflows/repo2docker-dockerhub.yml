@@ -62,7 +62,7 @@ jobs:
       uses: jupyterhub/repo2docker-action@master
       with:
         DOCKER_USERNAME: ${{ secrets.QUAYIO_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.QUAYIO_PASSWORD }}
+        DOCKER_PASSWORD: ${{ secrets.QUAYIO_TOKEN }}
         DOCKER_REGISTRY: quay.io
         IMAGE_NAME: ${{ env.IMAGE_NAME }}
         BINDER_CACHE: true
