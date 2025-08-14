@@ -72,6 +72,11 @@ jobs:
         sed -E -i '1,/^FROM / s|^FROM .*$|FROM '"$IMAGE_REF"'|' binder/Dockerfile
         echo "Updated FROM in binder/Dockerfile to $IMAGE_REF"
 
+    - name: Pull latest changes and rebase
+      run: |
+        git fetch origin
+        git rebase origin/main
+        
     - name: Commit binder/Dockerfile
       uses: EndBug/add-and-commit@v9
       with:
