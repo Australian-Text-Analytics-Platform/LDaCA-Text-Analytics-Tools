@@ -77,22 +77,29 @@ jobs:
       run: |
         echo "# Submodule hashes and commit URLs for this build:" >> binder/Dockerfile
         if [ -f .gitmodules ]; then
+          echo "# (Debug) Listing submodule pointers from git ls-tree:" >> binder/Dockerfile
+          git ls-tree HEAD | grep commit || true >> binder/Dockerfile
           for submodule in $(git config --file .gitmodules --get-regexp path | awk '{print $2}'); do
-            if [ -d "$submodule/.git" ]; then
-              hash=$(git -C "$submodule" rev-parse HEAD || echo "UNKNOWN")
-              url=$(git config --file .gitmodules --get-regexp "submodule.$submodule.url" | awk '{print $2}')
-              # Normalize common SSH/HTTPS forms to https://github.com/owner/repo
-              norm_url=$url
-              if echo "$norm_url" | grep -q '^git@github.com:'; then
-                norm_url=https://github.com/$(echo "$norm_url" | sed 's#git@github.com:##; s#\.git$##')
-              fi
-              if echo "$norm_url" | grep -q '^https://github.com/'; then
-                echo "# $submodule: $hash $norm_url/tree/$hash" >> binder/Dockerfile
+            url=$(git config -f .gitmodules submodule.$submodule.url || echo "UNKNOWN_URL")
+            # Get recorded pointer SHA from index/tree (works even if submodule not initialized)
+            pointer=$(git ls-tree HEAD "$submodule" 2>/dev/null | awk '{print $3}')
+            if [ -z "$pointer" ]; then
+              # Fallback: try looking at working tree if initialized
+              pointer=$(git -C "$submodule" rev-parse HEAD 2>/dev/null || echo "UNKNOWN_HASH")
+            fi
+            norm_url=$url
+            case "$norm_url" in
+              git@github.com:*) norm_url=https://github.com/$(echo "$norm_url" | sed 's#git@github.com:##; s#\.git$##');;
+              *.git) norm_url=$(echo "$norm_url" | sed 's#\.git$##');;
+            esac
+            if echo "$norm_url" | grep -q '^https://github.com/'; then
+              if [ "$pointer" = "UNKNOWN_HASH" ] || [ -z "$pointer" ]; then
+                echo "# $submodule: (could not determine commit) $norm_url" >> binder/Dockerfile
               else
-                echo "# $submodule: $hash $url (non-GitHub URL)" >> binder/Dockerfile
+                echo "# $submodule: $pointer $norm_url/tree/$pointer" >> binder/Dockerfile
               fi
             else
-              echo "# $submodule: (missing .git directory)" >> binder/Dockerfile
+              echo "# $submodule: $pointer $url" >> binder/Dockerfile
             fi
           done
         else
