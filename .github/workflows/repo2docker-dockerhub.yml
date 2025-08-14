@@ -75,7 +75,12 @@ jobs:
         echo "Updated FROM in binder/Dockerfile to $IMAGE_REF"
     - name: Append submodule hashes and commit URLs to Dockerfile
       run: |
-        echo "# Submodule hashes and commit URLs for this build:" >> binder/Dockerfile
+        # Truncate Dockerfile to only keep header and FROM line
+        if grep -q '^FROM ' binder/Dockerfile; then
+          sed -n '1,/^FROM /p' binder/Dockerfile > binder/Dockerfile.__trim && mv binder/Dockerfile.__trim binder/Dockerfile
+        fi
+        ts=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+        echo "# Submodule hashes and commit URLs for this build (generated at $ts UTC, parent repo $GITHUB_SHA)" >> binder/Dockerfile
         if [ -f .gitmodules ]; then
           echo "# (Debug) Listing submodule pointers from git ls-tree:" >> binder/Dockerfile
           git ls-tree HEAD | grep commit || true >> binder/Dockerfile
@@ -87,6 +92,11 @@ jobs:
               # Fallback: try looking at working tree if initialized
               pointer=$(git -C "$submodule" rev-parse HEAD 2>/dev/null || echo "UNKNOWN_HASH")
             fi
+            if [ "$pointer" != "UNKNOWN_HASH" ] && [ -n "$pointer" ]; then
+              pointer_short=${pointer:0:12}
+            else
+              pointer_short=$pointer
+            fi
             norm_url=$url
             case "$norm_url" in
               git@github.com:*) norm_url=https://github.com/$(echo "$norm_url" | sed 's#git@github.com:##; s#\.git$##');;
@@ -96,10 +106,10 @@ jobs:
               if [ "$pointer" = "UNKNOWN_HASH" ] || [ -z "$pointer" ]; then
                 echo "# $submodule: (could not determine commit) $norm_url" >> binder/Dockerfile
               else
-                echo "# $submodule: $pointer $norm_url/tree/$pointer" >> binder/Dockerfile
+                echo "# $submodule: $pointer_short $norm_url/tree/$pointer_short" >> binder/Dockerfile
               fi
             else
-              echo "# $submodule: $pointer $url" >> binder/Dockerfile
+              echo "# $submodule: $pointer_short $url/tree/$pointer_short" >> binder/Dockerfile
             fi
           done
         else
