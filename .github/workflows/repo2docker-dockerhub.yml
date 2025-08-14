@@ -40,28 +40,39 @@ jobs:
           rm -f binder/Dockerfile
         fi
 
-    - name: Derive lowercase image name
+    - name: Derive lowercase image name (Quay.io)
       run: |
         REPO_NAME="${GITHUB_REPOSITORY#*/}"
         REPO_NAME_LC="$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]')"
         echo "REPO_NAME_LC=$REPO_NAME_LC" >> $GITHUB_ENV
-        echo "IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME_LC" >> $GITHUB_ENV
+        echo "IMAGE_NAME=${{ secrets.QUAYIO_USERNAME }}/$REPO_NAME_LC" >> $GITHUB_ENV
 
-    - name: Build and push with repo2docker (Docker Hub)
-      id: r2d
+  # - name: Build and push with repo2docker (Docker Hub)  # Disabled for Quay-only test
+  #   id: r2d
+  #   uses: jupyterhub/repo2docker-action@master
+  #   with:
+  #     DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  #     DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+  #     DOCKER_REGISTRY: docker.io
+  #     IMAGE_NAME: ${{ env.IMAGE_NAME }}
+  #     # Do not set BINDER_CACHE (Quay-specific)
+
+    - name: Build and push with repo2docker (Quay.io with Binder cache)
+      id: r2d-quay
       uses: jupyterhub/repo2docker-action@master
       with:
-        DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
-        DOCKER_REGISTRY: docker.io
+        DOCKER_USERNAME: ${{ secrets.QUAYIO_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.QUAYIO_PASSWORD }}
+        DOCKER_REGISTRY: quay.io
         IMAGE_NAME: ${{ env.IMAGE_NAME }}
-        # Do not set BINDER_CACHE (Quay-specific)
+        BINDER_CACHE: true
 
     - name: Compute short SHA and image ref
       run: |
         SHORT_SHA="${GITHUB_SHA::12}"
         echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
-        echo "IMAGE_REF=${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME_LC:$SHORT_SHA" >> $GITHUB_ENV
+        # Use Quay image name for FROM reference
+        echo "IMAGE_REF=${{ env.IMAGE_NAME }}:$SHORT_SHA" >> $GITHUB_ENV
 
     - name: Restore binder/Dockerfile and update FROM tag (preserve COPY lines)
       run: |
