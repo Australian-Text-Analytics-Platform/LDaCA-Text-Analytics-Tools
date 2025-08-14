@@ -1,7 +1,5 @@
 name: repo2docker-dockerhub
 on:
-  push:
-    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:
@@ -80,3 +78,8 @@ jobs:
         add: binder/Dockerfile
         message: "chore: update Binder base image tag"
         default_author: github_actions
+
+    - name: Append submodule hashes and commit URLs to Dockerfile
+      run: |
+        echo "# Submodule hashes and commit URLs for this build:" >> binder/Dockerfile
+        git submodule foreach --quiet 'echo "# $name: $(git rev-parse HEAD) https://github.com/$url/tree/$(git rev-parse HEAD)" >> ../../binder/Dockerfile'
