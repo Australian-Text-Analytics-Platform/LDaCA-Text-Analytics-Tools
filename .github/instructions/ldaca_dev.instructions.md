@@ -2,187 +2,173 @@
 applyTo: '**/*ldaca*/**'
 ---
 
-# LDaCA Ecosystem Development Guide
+# LDaCA Development Guide (AI-Oriented)
 
-## Architecture Overview
+## 1. Purpose
+Single authoritative machine-readable reference for cross-layer development (docframe, docworkspace, web app). Minimize ambiguity. Prefer composition, lazy evaluation, and API purity.
 
-LDaCA is a **three-layer text analysis ecosystem**:
-- **docframe**: Text processing library extending Polars (`df.text.tokenize()`)
-- **docworkspace**: Data management as a graph structure (`Node`/`Workspace` classes)  
-- **ldaca_web_app**: Full-stack platform (FastAPI backend + React frontend)
+## 2. Layers & Data Flow
+Raw Text → docframe (DocDataFrame/DocLazyFrame) → docworkspace (Workspace/Node graph) → FastAPI (JSON) → React (UI). No alternate paths.
 
-**Data Flow**: Raw Text → docframe (DocDataFrame/DocLazyFrame) → docworkspace (Node/Workspace) → FastAPI (JSON) → React (UI)
+## 3. Core Principles
+- Single Source of Truth (workspace + underlying Polars)
+- Composition over inheritance
+- API-first (backend = thin adapter over docworkspace)
+- Lazy-by-default (defer collect())
+- Transparent Node proxying
+- Aggressive refactoring; no backward guarantees
+- Deterministic JSON for frontend
 
-## Design Principles
-
-- **Single Source of Truth**: Eliminates data synchronization issues across all layers
-- **Composition Over Inheritance**: Use composition for better flexibility in docframe (Polars doesn't support inheritance)
-- **API-First Design**: Clean separation between backend and frontend with structured JSON
-- **Lazy Evaluation**: Preserve Polars lazy evaluation throughout the stack for performance
-- **Transparent Proxies**: Nodes delegate to underlying data structures seamlessly
-- **Aggressive Refactoring**: Focus on improving code quality, don't worry about backward compatibility
-
-## Critical Development Commands
-
+## 4. Critical Commands
 ```bash
-# Start the full ecosystem
+bash run.sh                         # Full stack quick start
+cd docframe && uv run pytest .
+cd docworkspace && uv run pytest .
+cd ldaca_web_app/backend && uv run pytest .
+cd ldaca_web_app/frontend && npm test
+cd ldaca_web_app/backend && uv run fastapi dev main.py --port 8001
+cd ldaca_web_app/frontend && npm start
+uv run python -c "..."
+```
+
+## 5. Architectural Patterns
+- Node methods mirror underlying Polars; produce new Nodes.
+- DocDataFrame wraps Polars object, never inherits.
+- Workspace serialization consumed directly by React Flow (`to_api_graph`).
+- Layout chosen via `layout_algorithm` param only.
+
+## 6. Integration Contracts
+Backend must:
+- Import `docframe` before using namespace ops.
+- Expose workspace graph via `to_api_graph(layout_algorithm=...)`.
+- Return JSON: { nodes: [...], edges: [...], workspace_info: {...} } (no Polars objects).
+Frontend must:
+- Use React Query with standardized keys.
+- Never mutate server state locally.
+
+## 7. Environment / Dependencies
+Bootstrap:
+```bash
+uv sync
+(cd ldaca_web_app/frontend && npm ci)
 bash run.sh
-
-# Individual component testing (each has different patterns)
-cd docframe && pytest                    # Custom test runner, no pytest required
-cd docworkspace && pytest               # Standard pytest + FastAPI integration tests  
-cd ldaca_web_app/backend && pytest      # Backend tests
-cd ldaca_web_app/frontend && npm test   # Frontend tests
-
-# Running full stack (separate terminals)
-cd backend && python main.py            # Backend (port 8001)
-cd frontend && npm start                 # Frontend (port 3000)
-
-# Running python commands
-uv run python -c "XXX" # Use uv for python commands
 ```
+Enforce: `uv sync --frozen` in CI; use `.nvmrc`.
 
-## Key Architectural Patterns
+## 8. (Test-Driven Development) TDD Workflow
+1. Plan (Sequential Thinking MCP).
+2. Write/modify tests (unit → integration → API → E2E).
+3. Implement minimal code.
+4. Verify lazy preservation.
+5. Update instructions + changelog.
+6. Remove temp tests.
 
-### Single Source of Truth
-All workspace data flows through `docworkspace` library methods. The web app's `workspace.py` delegates directly to `docworkspace.Workspace` - never custom implementations.
+## 9. API Endpoint Checklist
+For every new/changed endpoint:
+1. Pydantic models defined.
+2. Delegates only to docworkspace (no custom graph logic).
+3. Auth enforced (Bearer) unless explicit local dev flag.
+4. Tests: 401, happy path, empty, large payload.
+5. Output free of Polars objects (convert to Python types).
+6. Query key invalidation aligned.
+7. Document shape change here.
 
-### Node Delegation Pattern
-```python
-# Nodes act as transparent proxies - all DataFrame methods work directly
-node = workspace.add_node(Node(data=df, name="data"))
-filtered = node.filter(pl.col("age") > 30)  # Creates new Node automatically
-```
+## 10. Workspace Lifecycle
+Unload: POST `/api/workspaces/{id}/unload?save=true`
+- save=true → serialize then drop from memory.
+- Next access lazy-loads.
+- 404 only if neither memory nor disk.
+Use for memory relief or forced reload.
 
-### Composition Over Inheritance (docframe)
-```python
-class DocDataFrame:
-    def __init__(self, data):
-        self._df = pl.DataFrame(data)  # Wraps, doesn't inherit (unlike GeoPandas)
-```
+## 11. React Query Key Convention
+Factory pattern only. Canonical shapes:
+- ['workspace', wid, 'graph']
+- ['workspace', wid, 'node', nid]
+Invalidate with identical arrays. Batch invalidations post-mutation.
 
-### API-First Design (Web App)
-```python
-# Backend uses actual docworkspace, not custom logic
-workspace = Workspace(name)
-graph = workspace.to_api_graph()  # React Flow compatible JSON
-```
+## 12. Text Namespace (docframe)
+Registration requires `import docframe`. Usage: `df.text.tokenize("col")`. Missing import = silent failure.
 
-## Development Workflows
+## 13. Extending Text Operations
+1. Implement pure utility (no side effects).
+2. Register in `text_namespace.py`.
+3. Prefer lazy expressions (avoid early `collect()`).
+4. Tests: utility + namespace integration (lazy form).
+5. Document public ops here.
 
-### Test-Driven Development Process
-1. **Plan with Sequential Thinking MCP**: Break down complex tasks
-2. **Create/Modify Tests First**: Always write tests before implementing
-3. **Follow Single Source of Truth**: All workspace data goes through proper channels
-4. **Test Integration Points**: Verify cross-library compatibility
-5. **Update API Endpoints**: Ensure FastAPI uses proper Pydantic models
-6. **Update Instructions**: Document new patterns after implementation
+## 14. Extending Layout Algorithms
+Add in `Workspace.to_api_graph(layout_algorithm=...)`.
+Rules:
+- Deterministic (or seeded).
+- Tests: schema (x,y), id stability, count.
+- Frontend remains passive consumer (no layout logic duplication).
 
-### Cross-Library Integration Testing
-1. Test docframe → docworkspace compatibility
-2. Test docworkspace → FastAPI JSON serialization  
-3. Test full React Flow integration with browser automation
+## 15. Performance & Lazy
+- Chain lazy ops; single `collect()` at API edge.
+- Inspect plan: `df.lazy().describe_optimized_plan()`.
+- Avoid accidental materialization (`len`, `head`) in core code.
+- Wrap diagnostic collections behind DEBUG.
 
-### Available Development Tools
-- **Playwright MCP**: End-to-end browser testing and user interaction simulation, you can use it to see the frontend as well as the console logs.
-- **Context7 MCP**: Latest documentation for React Flow, Zustand, TanStack Query
-- **Memory MCP**: Context management for long/complicated tasks
-- **Sequential Thinking MCP**: Structured problem-solving approach
-- **Backend/Frontend logs**: Check `backend/backend.log` and `frontend/frontend.log` for debugging
+## 16. Logging & Observability
+- Levels: DEBUG (dev), INFO (lifecycle), WARNING (recoverable), ERROR (client-surfaced).
+- Correlation id: use `X-Request-ID` or generate.
+- Do not log raw user text—hash or summarize.
+- Time hotspots (DEBUG only).
 
-## Critical Integration Points
+## 17. Security & Auth
+- Tokens stored server-side (SQLite); never ship to client bundle.
+- Local dev bypass flag must log WARNING.
+- Validate workspace ownership for mutations.
+- Rate limiting: placeholder (add when implemented).
 
-### Text Namespace Registration
-```python
-import polars as pl
-import docframe  # Required for df.text.* to work across all libraries
-df.text.tokenize("content")  # Now works
-```
+## 18. Memory Management
+Use unload endpoint for large graphs. Avoid keeping large intermediate DataFrames referenced by lingering Nodes.
 
-### FastAPI Models & React Flow Compatibility
-```python
-# In workspace.py - critical method for frontend
-def to_api_graph(self, layout_algorithm="grid"):
-    return {
-        "nodes": [...],  # React Flow nodes with positioning
-        "edges": [...],  # Parent-child relationships  
-        "workspace_info": {...}
-    }
-```
+## 19. Testing Strategy
+Order:
+1. Pure logic (fast)
+2. Cross-lib integration (docframe ↔ docworkspace)
+3. API serialization
+4. E2E (Playwright)
+Conventions:
+- `test_*.py` unit, `itest_*.py` integration, `e2e_*.spec.ts` frontend.
+- Structural assertions over snapshots.
+- Mark slow cases.
 
-### Authentication Flow
-All API calls (except local mode) need `Authorization: Bearer <token>` from SQLite sessions:
-```bash
-# Get token for API testing
-sqlite3 data/users.db "SELECT access_token FROM user_sessions WHERE expires_at > datetime('now') LIMIT 1;"
+## 20. Frontend State Rules
+- React Query only; no ad-hoc global mutation.
+- Invalidate specific keys after mutation; no blanket clear.
+- Use helper factories for query keys.
 
-# Test API with curl
-curl -H "Authorization: Bearer <token>" http://localhost:8001/api/workspaces/
-```
+## 21. Update Checklist (Run After Change)
+If change touches:
+- API shape → update Sections 9/13/14
+- Query keys → update Section 11
+- New text op → Section 13
+- New layout algorithm → Section 14
+- Auth/security change → Section 17
+- Performance lesson → Section 15
+Then append Changelog entry.
 
-### Frontend State Management
-Never mutate server state directly. Use React Query mutations with proper cache invalidation:
-```typescript
-const mutation = useMutation({
-  mutationFn: deleteNode,
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.workspaceGraph(id) });
-  }
-});
-```
+## 22. Common Failure Modes
+- Missing `import docframe` → text namespace absent.
+- Inconsistent query key arrays → stale UI.
+- Eager collection inside core pipeline → performance regression.
+- Custom Node/Workspace subclassing → reject; refactor to composition.
 
-## Common Integration Pitfalls
+## 23. Tooling (MCP)
+- Sequential Thinking MCP: planning.
+- Memory MCP: long task context.
+- Playwright MCP: E2E + console logs.
+- Context7 MCP: React Flow, Zustand, TanStack Query docs.
 
-### CORS Issues
-Frontend (`127.0.0.1:3000`) vs backend (`localhost:8001`) - add both to `cors_allowed_origins_str` in config
+## 24. Enforcement Heuristics (For Automated QA)
+Reject PR if:
+- Direct Polars object returned via API.
+- Layout logic duplicated in frontend.
+- Query key literal strings differ from factory.
+- New endpoint lacks 401 test.
+- Text op collects eagerly without justification.
 
-### Missing docframe Import
-Text namespace breaks silently without explicit import
-
-### Custom Workspace Logic
-Always use docworkspace methods, not custom implementations:
-```python
-# ✅ Correct - uses library
-workspace = Workspace(name)
-node = workspace.add_node(Node(data=df, name="data"))
-
-# ❌ Wrong - custom implementation
-# Don't create custom node/workspace classes
-```
-
-### React Query Cache Management
-Use consistent query keys for proper invalidation - keys must match exactly between queries and invalidation calls.
-
-## File Structure Conventions
-
-- **docframe**: `core/` (main classes), `text_namespace.py` (Polars extensions)
-- **docworkspace**: `api_models.py`/`api_utils.py` (FastAPI integration), main classes in root
-- **Web App**: `backend/core/workspace.py` (uses docworkspace directly), `frontend/hooks/useWorkspace.ts` (consolidates operations)
-
-## Testing Strategy
-
-Each layer has distinct testing approaches:
-- **docframe**: Composition patterns, text processing pipelines
-- **docworkspace**: Graph operations, serialization, lazy evaluation
-- **Web App**: FastAPI integration, React Flow compatibility, Google OAuth flow
-
-Always test integration points between layers to catch JSON serialization and cross-library compatibility issues. Delete temporary test files after validation, keep only necessary tests in the suite.
-
-Update this instructions as new changes are made to the architecture or development patterns. Document new patterns and workflows immediately after implementation to ensure clarity for all developers.
-
-### Workspace Lifecycle Management
-
-Workspaces are cached per-user in memory by `WorkspaceManager`. To reduce memory footprint you can explicitly unload a workspace (persist then remove from memory). After unloading, the next access will transparently lazy-load it from disk.
-
-API:
-`POST /api/workspaces/{workspace_id}/unload?save=true` (default save=true)
-
-Behavior:
-- If `save=true` the workspace is serialized (JSON) before removal.
-- In-memory reference is deleted; current workspace pointer cleared if it was the unloaded one.
-- Returns 404 only if neither an in-memory instance nor an on-disk file exists.
-- Subsequent calls to any endpoint that needs the workspace will trigger disk load.
-
-Use Cases:
-- Free RAM when working with many large workspaces.
-- Force reload from persisted state after manual file edits (advanced/debug scenarios).
+## 25. Changelog (Newest First)
+- [YYYY-MM-DD] Reorganized instructions into concise AI-structured format (sections 1–25).
