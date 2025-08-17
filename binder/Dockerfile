@@ -1,7 +1,7 @@
 # Github Action Built Image
-FROM milysun/ldaca-text-analytics-tools:9e0f4dfe979f
-# Submodule hashes and commit URLs for this build (generated at 2025-08-15T02:04:06Z UTC, parent repo 9e0f4dfe979f3df5f0692b98959094ffa71a225f)
+FROM milysun/ldaca-text-analytics-tools:0450d8f10cf6
+# Submodule hashes and commit URLs for this build (generated at 2025-08-17T20:41:09Z UTC, parent repo 0450d8f10cf6fcf167de10acbaf03988c3c1bbae)
 # (Debug) Listing submodule pointers from git ls-tree:
-# ldaca_web_app: 3e87af7a6888 https://github.com/Australian-Text-Analytics-Platform/ldaca_web_app/tree/3e87af7a6888
-# docframe: 0f55974f9aff https://github.com/Australian-Text-Analytics-Platform/docframe/tree/0f55974f9aff
-# docworkspace: e491ed41d07a https://github.com/Australian-Text-Analytics-Platform/docworkspace/tree/e491ed41d07a
+# ldaca_web_app: 10879fb5326f https://github.com/Australian-Text-Analytics-Platform/ldaca_web_app/tree/10879fb5326f
+# docframe: 0746f534bc72 https://github.com/Australian-Text-Analytics-Platform/docframe/tree/0746f534bc72
+# docworkspace: 75052f4e8a5d https://github.com/Australian-Text-Analytics-Platform/docworkspace/tree/75052f4e8a5d
