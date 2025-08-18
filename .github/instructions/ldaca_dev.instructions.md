@@ -26,9 +26,9 @@ cd docframe && uv run pytest .
 cd docworkspace && uv run pytest .
 cd ldaca_web_app/backend && uv run pytest .
 cd ldaca_web_app/frontend && npm test
-cd ldaca_web_app/backend && uv run fastapi dev main.py --port 8001
-cd ldaca_web_app/frontend && npm start
-uv run python -c "..."
+cd ldaca_web_app/backend && uv run fastapi dev main.py --port 8001 # check if there's already a fastapi process running, because usually user will have it running in the background in dev mode with reload
+cd ldaca_web_app/frontend && npm start # check if there's already a npm process running, because usually user will have it running in the background in dev mode with reload
+uv run python -c "..." # run python commands
 ```
 
 ## 5. Architectural Patterns

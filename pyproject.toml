@@ -7,6 +7,7 @@ requires-python = ">=3.9"
 dependencies = [
     "docframe",
     "docworkspace",
+    "ldaca-web-app-backend"
 ]
 
 [tool.uv.workspace]
@@ -19,3 +20,4 @@ members = [
 [tool.uv.sources]
 docframe = { workspace = true }
 docworkspace = { workspace = true }
+ldaca-web-app-backend = { workspace = true }

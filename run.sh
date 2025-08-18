@@ -98,15 +98,8 @@ FRONTEND_DIR="$WEB_APP_DIR/frontend"
 # Step 1: Install all workspace dependencies using uv workspace
 print_status "Installing LDaCA workspace dependencies..."
 cd "$SCRIPT_DIR"
-if [ -f "pyproject.toml" ]; then
-    uv sync
-    uv pip install -e docframe
-    uv pip install -e docworkspace
-    print_success "All workspace dependencies installed"
-else
-    print_error "No pyproject.toml found in root directory"
-    exit 1
-fi
+uv sync
+print_success "All workspace dependencies installed"
 
 # Step 2: Install frontend dependencies
 print_status "Installing frontend dependencies..."
@@ -177,7 +170,7 @@ fi
 
 # Start backend in background using the project's virtual environment
 cd "$BACKEND_DIR"
-uv run --package ldaca-backend fastapi dev main.py --port 8001 > backend.log 2>&1 &
+uv run fastapi dev src/ldaca_web_app_backend/main.py --port 8001 > backend.log 2>&1 &
 BACKEND_PID=$!
 
 # Wait a moment for backend to start

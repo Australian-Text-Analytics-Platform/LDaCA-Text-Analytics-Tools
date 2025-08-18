@@ -13,12 +13,12 @@ cd "$(dirname "$0")"
 export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$PWD:$PWD/docframe:$PWD/docworkspace:$PWD/ldaca_web_app/backend"
 
 # Backend: run uvicorn in background
-if [ -f "ldaca_web_app/backend/main.py" ]; then
+if [ -f "ldaca_web_app/backend/src/ldaca_web_app_backend/main.py" ]; then
   (
     cd ldaca_web_app/backend
-    echo "Starting uvicorn on 127.0.0.1:8001"
-    uvicorn main:app --host 127.0.0.1 --port 8001 --log-level info >> "$HOME/uvicorn.log" 2>&1 &
-    echo $! > "$HOME/uvicorn.pid"
+    echo "Starting backend on 127.0.0.1:8001"
+    # uvicorn main:app --host 127.0.0.1 --port 8001 --log-level info >> "$HOME/uvicorn.log" 2>&1 &
+    fastapi dev src/ldaca_web_app_backend/main.py --port 8001 >> "$HOME/backend.log" 2>&1 &
   )
 fi
 
