@@ -17,8 +17,10 @@ if [ -f "ldaca_web_app/backend/src/ldaca_web_app_backend/main.py" ]; then
   (
     cd ldaca_web_app/backend
     echo "Starting backend on 127.0.0.1:8001"
-    # uvicorn main:app --host 127.0.0.1 --port 8001 --log-level info >> "$HOME/uvicorn.log" 2>&1 &
+    #uvicorn main:app --host 127.0.0.1 --port 8001 --log-level info >> "$HOME/uvicorn.log" 2>&1 &
+    cd "$HOME/ldaca_web_app/backend/" &
     fastapi dev src/ldaca_web_app_backend/main.py --port 8001 >> "$HOME/backend.log" 2>&1 &
+    cd "$(dirname "$0")" &
   )
 fi
 
