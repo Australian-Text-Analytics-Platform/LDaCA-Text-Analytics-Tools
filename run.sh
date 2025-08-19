@@ -60,14 +60,9 @@ trap cleanup EXIT INT TERM
 print_status "Checking prerequisites..."
 
 # Initialize submodules if needed
-print_status "Checking git submodules..."
-if [ ! -f "docframe/pyproject.toml" ] || [ ! -f "docworkspace/pyproject.toml" ] || [ ! -f "ldaca_web_app/backend/main.py" ]; then
-    print_status "Initializing git submodules..."
-    git submodule update --init --recursive
-    print_success "Git submodules initialized"
-else
-    print_success "Git submodules already initialized"
-fi
+print_status "Initializing git submodules..."
+git submodule update --init --recursive
+print_success "Git submodules initialized"
 
 if ! command_exists uv; then
     print_error "uv is not installed. Please install it first:"
@@ -161,12 +156,6 @@ fi
 
 # Step 5: Start the backend server
 print_status "Starting backend server on port 8001..."
-
-# Check if main.py exists
-if [ ! -f "$BACKEND_DIR/main.py" ]; then
-    print_error "main.py not found in backend directory"
-    exit 1
-fi
 
 # Start backend in background using the project's virtual environment
 cd "$BACKEND_DIR"
