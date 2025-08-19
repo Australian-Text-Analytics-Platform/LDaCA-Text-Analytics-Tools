@@ -4,6 +4,14 @@ set -euo pipefail
 # Ensure we are in repo root
 cd "$(dirname "$0")/.."
 
+# Force CPU-only PyTorch wheels on Linux (repo2docker) while keeping PyPI for everything else.
+# This ensures torch resolves from the CPU index, but other packages come from PyPI.
+export PIP_INDEX_URL="https://download.pytorch.org/whl/cpu"
+export PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
+export PIP_PREFER_BINARY=1
+echo "postBuild: PIP_INDEX_URL=$PIP_INDEX_URL"
+echo "postBuild: PIP_EXTRA_INDEX_URL=$PIP_EXTRA_INDEX_URL"
+
 # Do NOT install backend as an editable package here; we rely on PYTHONPATH set in start
 # to import backend/docframe/docworkspace from the repo. Runtime deps are installed via environment.yml.
 # if [ -d "ldaca_web_app/backend" ]; then

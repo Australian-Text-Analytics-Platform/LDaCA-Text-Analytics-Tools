@@ -90,6 +90,36 @@ WEB_APP_DIR="$SCRIPT_DIR/ldaca_web_app"
 BACKEND_DIR="$WEB_APP_DIR/backend"
 FRONTEND_DIR="$WEB_APP_DIR/frontend"
 
+# Ensure Python can import our workspace packages from their src/ layouts.
+# This avoids picking up the top-level project folders as namespace packages
+# (which would not expose Node/Workspace at the package root).
+export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$DOCFRAME_DIR/src:$DOCWORKSPACE_DIR/src:$BACKEND_DIR/src"
+print_status "Using PYTHONPATH=$PYTHONPATH"
+
+# Quick import sanity check for docworkspace/docframe
+print_status "Verifying Python package imports (docworkspace/docframe)..."
+if ! uv run python - <<'PY'
+import sys
+print('sys.path[0..3]=', sys.path[:3])
+try:
+    import docworkspace
+    from docworkspace import Node, Workspace
+    print('docworkspace OK:', getattr(docworkspace, '__version__', 'n/a'))
+except Exception as e:
+    print('docworkspace import failed:', e)
+    raise
+try:
+    import docframe
+    print('docframe OK:', getattr(docframe, '__version__', 'n/a'))
+except Exception as e:
+    print('docframe import failed:', e)
+    raise
+PY
+then
+    print_error "Python import check failed (see above)."
+    exit 1
+fi
+
 # Step 1: Install all workspace dependencies using uv workspace
 print_status "Installing LDaCA workspace dependencies..."
 cd "$SCRIPT_DIR"
