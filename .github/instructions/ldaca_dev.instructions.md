@@ -30,6 +30,7 @@ cd ldaca_web_app/backend && uv run fastapi dev main.py --port 8001 # check if th
 cd ldaca_web_app/frontend && npm start # check if there's already a npm process running, because usually user will have it running in the background in dev mode with reload
 uv run python -c "..." # run python commands
 ```
+Don't directly run `python -c "..."`, use uv run python XXX
 
 ## 5. Architectural Patterns
 - Node methods mirror underlying Polars; produce new Nodes.

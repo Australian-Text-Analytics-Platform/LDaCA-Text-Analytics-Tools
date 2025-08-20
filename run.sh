@@ -70,11 +70,6 @@ if ! command_exists uv; then
     exit 1
 fi
 
-if ! command_exists node; then
-    print_error "Node.js is not installed. Please install it first."
-    exit 1
-fi
-
 if ! command_exists npm; then
     print_error "npm is not installed. Please install it first."
     exit 1
@@ -129,13 +124,8 @@ print_success "All workspace dependencies installed"
 # Step 2: Install frontend dependencies
 print_status "Installing frontend dependencies..."
 cd "$FRONTEND_DIR"
-if [ -f "package.json" ]; then
-    npm install
-    print_success "Frontend dependencies installed"
-else
-    print_error "No package.json found in frontend directory"
-    exit 1
-fi
+npm install
+print_success "Frontend dependencies installed"
 
 # Step 3: Check if ports are available
 print_status "Checking port availability..."
@@ -192,9 +182,6 @@ cd "$BACKEND_DIR"
 uv run fastapi dev src/ldaca_web_app_backend/main.py --port 8001 > backend.log 2>&1 &
 BACKEND_PID=$!
 
-# Wait a moment for backend to start
-sleep 3
-
 # Check if backend is running
 if kill -0 $BACKEND_PID 2>/dev/null; then
     print_success "Backend server started (PID: $BACKEND_PID)"
@@ -209,11 +196,9 @@ print_status "Starting frontend development server on port 3000..."
 cd "$FRONTEND_DIR"
 
 # Start frontend in background
+npm run build
 npm start > "$FRONTEND_DIR/frontend.log" 2>&1 &
 FRONTEND_PID=$!
-
-# Wait a moment for frontend to start
-sleep 5
 
 # Check if frontend is running
 if kill -0 $FRONTEND_PID 2>/dev/null; then
@@ -226,22 +211,22 @@ fi
 
 # Step 7: Display status and URLs
 echo
-print_success "🚀 LDaCA ecosystem is now running!"
+print_success "LDaCA ecosystem is now running!"
 echo
-echo -e "${BLUE}📊 Service Status:${NC}"
+echo -e "${BLUE}Service Status:${NC}"
 echo -e "   Backend:  ${GREEN}✅ Running${NC} on http://localhost:8001"
 echo -e "   Frontend: ${GREEN}✅ Running${NC} on http://localhost:3000"
 echo
-echo -e "${BLUE}📝 Logs:${NC}"
+echo -e "${BLUE}Logs:${NC}"
 echo -e "   Backend:  ${BACKEND_DIR}/backend.log"
 echo -e "   Frontend: ${FRONTEND_DIR}/frontend.log"
 echo
-echo -e "${BLUE}🔗 Quick Links:${NC}"
+echo -e "${BLUE}Quick Links:${NC}"
 echo -e "   Web App:    ${YELLOW}http://localhost:3000${NC}"
-echo -e "   API Docs:   ${YELLOW}http://localhost:8001/docs${NC}"
-echo -e "   Health:     ${YELLOW}http://localhost:8001/health${NC}"
+echo -e "   API Docs:   ${YELLOW}http://localhost:8001/api/docs${NC}"
+echo -e "   Health:     ${YELLOW}http://localhost:8001/api/health${NC}"
 echo
-echo -e "${BLUE}⌨️  Commands:${NC}"
+echo -e "${BLUE}⌨Commands:${NC}"
 echo -e "   View backend logs:  ${YELLOW}tail -f $BACKEND_DIR/backend.log${NC}"
 echo -e "   View frontend logs: ${YELLOW}tail -f $FRONTEND_DIR/frontend.log${NC}"
 echo -e "   Stop services:      ${YELLOW}Ctrl+C${NC}"
