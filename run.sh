@@ -196,7 +196,7 @@ print_status "Starting frontend development server on port 3000..."
 cd "$FRONTEND_DIR"
 
 # Start frontend in background
-npm run build
+# npm run build
 npm start > "$FRONTEND_DIR/frontend.log" 2>&1 &
 FRONTEND_PID=$!
 
