@@ -25,9 +25,9 @@ echo "postBuild: PIP_EXTRA_INDEX_URL=$PIP_EXTRA_INDEX_URL"
 # if [ -f "docworkspace/pyproject.toml" ]; then
 #   python -m pip install ./docworkspace
 # fi
-python -m pip install docframe
-python -m pip install docworkspace
-python -m pip install ldaca_web_app/backend
+python -m pip install ./docframe
+python -m pip install ./docworkspace
+python -m pip install ./ldaca_web_app/backend
 
 # Ensure backend .env exists by copying from example if present (non-interactive)
 if [ -d "ldaca_web_app/backend" ]; then
