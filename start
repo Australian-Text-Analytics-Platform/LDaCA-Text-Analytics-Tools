@@ -6,25 +6,6 @@ set -euo pipefail
 # - Starts nginx serving frontend on 3000 and proxying /api -> 8001
 # - Delegates to Jupyter singleuser process provided by Binder
 
-# Ensure working directory is repo root
-cd "$(dirname "$0")"
-
-# PYTHONPATH so backend imports docframe/docworkspace in this repo (safe with unset var)
-export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$PWD:$PWD/docframe:$PWD/docworkspace:$PWD/ldaca_web_app/backend"
-
-# Backend: run uvicorn in background
-if [ -f "ldaca_web_app/backend/src/ldaca_web_app_backend/main.py" ]; then
-  (
-    cd ldaca_web_app/backend
-    if [ ! -f ".env" ]; then cp .env.example .env; fi
-    echo "Starting backend on 127.0.0.1:8001"
-    #uvicorn main:app --host 127.0.0.1 --port 8001 --log-level info >> "$HOME/uvicorn.log" 2>&1 &
-    cd "$HOME/ldaca_web_app/backend/" &
-    fastapi dev src/ldaca_web_app_backend/main.py --port 8001 >> "$HOME/backend.log" 2>&1 &
-    cd "$(dirname "$0")" &
-  )
-fi
-
 # Nginx: user-space instance with prefix $HOME/nginx
 NGINX_BIN="${NGINX_BIN:-}"
 if [ -z "$NGINX_BIN" ]; then
