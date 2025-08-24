@@ -19,12 +19,15 @@ echo "postBuild: PIP_EXTRA_INDEX_URL=$PIP_EXTRA_INDEX_URL"
 # fi
 
 # Install local Python libraries into site-packages (non-editable) to bake them into the image
-if [ -f "docframe/pyproject.toml" ]; then
-  python -m pip install ./docframe
-fi
-if [ -f "docworkspace/pyproject.toml" ]; then
-  python -m pip install ./docworkspace
-fi
+# if [ -f "docframe/pyproject.toml" ]; then
+#   python -m pip install ./docframe
+# fi
+# if [ -f "docworkspace/pyproject.toml" ]; then
+#   python -m pip install ./docworkspace
+# fi
+python -m pip install docframe
+python -m pip install docworkspace
+python -m pip install ldaca_web_app/backend
 
 # Ensure backend .env exists by copying from example if present (non-interactive)
 if [ -d "ldaca_web_app/backend" ]; then
