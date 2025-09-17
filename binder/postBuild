@@ -29,10 +29,25 @@ cd "$(dirname "$0")/.."
 # python -m pip install ./docworkspace
 # python -m pip install ./ldaca_web_app/backend
 
-# pip install uv
-pip install "docframe[cpu] @ ./docframe"
-pip install "docworkspace @ ./ldaca_web_app/docworkspace"
-pip install "ldaca_web_app_backend @ ./ldaca_web_app/backend"
+# Install local packages (non-editable) using path form to avoid invalid direct-reference syntax.
+# We avoid the "name @ ./path" form because pip expects a valid file URL when using '@'.
+# Path-based installs ensure correct resolution and extras work reliably.
+echo "[postBuild] Verifying local project directories exist"
+for p in ./docframe ./ldaca_web_app/docworkspace ./ldaca_web_app/backend; do
+  if [ ! -f "$p/pyproject.toml" ]; then
+    echo "[postBuild][ERROR] Missing pyproject.toml in $p" >&2
+    exit 1
+  fi
+done
+
+echo "[postBuild] Installing local Python packages (docframe[cpu], docworkspace, backend)"
+# Install docframe with its CPU extra first (provides torch CPU wheels) so subsequent builds reuse deps
+pip install "./docframe[cpu]"
+# Install workspace library (depends on docframe)
+pip install "./ldaca_web_app/docworkspace"
+# Install backend (depends on both)
+pip install "./ldaca_web_app/backend"
+echo "[postBuild] Local package installation complete"
 
 # Prefetch the Sentence-Transformers model used by BERTopic by default.
 # BERTopic defaults to "sentence-transformers/all-MiniLM-L6-v2" when no embedding_model is specified.
