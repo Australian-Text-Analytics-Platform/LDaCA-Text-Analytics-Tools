@@ -5,18 +5,18 @@ dependencies:
   - python=3.10
   - nodejs=20
   - pip
-  - pip:
-      - fastapi[standard]>=0.115.14
-      - uvicorn[standard]==0.23.2
-      - jupyter-server-proxy==4.1.2
-      - sqlalchemy[asyncio]
-      - aiosqlite
-      - httpx
-      - python-multipart
-      - pydantic-settings
-      - fastapi-users[sqlalchemy]>=14.0.1
-      - polars>=0.20.0
-      - pandas>=2.1.0
-      - google-auth>=2.40.0
-      - google-auth-oauthlib>=1.2.0
-      - python-dotenv>=1.0.0
+  # - pip:
+  #     - fastapi[standard]>=0.115.14
+  #     - uvicorn[standard]==0.23.2
+  #     - jupyter-server-proxy==4.1.2
+  #     - sqlalchemy[asyncio]
+  #     - aiosqlite
+  #     - httpx
+  #     - python-multipart
+  #     - pydantic-settings
+  #     - fastapi-users[sqlalchemy]>=14.0.1
+  #     - polars>=0.20.0
+  #     - pandas>=2.1.0
+  #     - google-auth>=2.40.0
+  #     - google-auth-oauthlib>=1.2.0
+  #     - python-dotenv>=1.0.0

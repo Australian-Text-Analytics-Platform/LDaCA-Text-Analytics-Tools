@@ -29,11 +29,10 @@ cd "$(dirname "$0")/.."
 # python -m pip install ./docworkspace
 # python -m pip install ./ldaca_web_app/backend
 
-pip install uv
-uv venv
-uv pip install "docframe[cpu] @ ./docframe"
-uv pip install "docworkspace @ ./ldaca_web_app/docworkspace"
-uv pip install "ldaca_web_app_backend @ ./ldaca_web_app/backend"
+# pip install uv
+pip install "docframe[cpu] @ ./docframe"
+pip install "docworkspace @ ./ldaca_web_app/docworkspace"
+pip install "ldaca_web_app_backend @ ./ldaca_web_app/backend"
 
 # Prefetch the Sentence-Transformers model used by BERTopic by default.
 # BERTopic defaults to "sentence-transformers/all-MiniLM-L6-v2" when no embedding_model is specified.
