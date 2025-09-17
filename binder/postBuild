@@ -30,6 +30,7 @@ cd "$(dirname "$0")/.."
 # python -m pip install ./ldaca_web_app/backend
 
 pip install uv
+uv venv
 uv pip install "docframe[cpu] @ ./docframe"
 uv pip install "docworkspace @ ./ldaca_web_app/docworkspace"
 uv pip install "ldaca_web_app_backend @ ./ldaca_web_app_backend"
