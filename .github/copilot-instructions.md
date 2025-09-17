@@ -50,8 +50,5 @@ applyTo: '**'
 - Eager materialization in core code → performance regressions.
 - Inconsistent React Query keys → stale UI or cache misses.
 
-## Security notes (dev default)
-- Do not return secrets; keep tokens server-side; set `SECRET_KEY` in production; restrict CORS in prod.
-
 ## When adding endpoints
 - Define Pydantic models; enforce auth (or explicit dev bypass); delegate to docworkspace; add tests (401 + happy path); ensure outputs are JSON-serializable.

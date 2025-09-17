@@ -80,8 +80,8 @@ print_success "Prerequisites check passed"
 # Get the script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 DOCFRAME_DIR="$SCRIPT_DIR/docframe"
-DOCWORKSPACE_DIR="$SCRIPT_DIR/docworkspace"
 WEB_APP_DIR="$SCRIPT_DIR/ldaca_web_app"
+DOCWORKSPACE_DIR="$WEB_APP_DIR/docworkspace"
 BACKEND_DIR="$WEB_APP_DIR/backend"
 FRONTEND_DIR="$WEB_APP_DIR/frontend"
 
