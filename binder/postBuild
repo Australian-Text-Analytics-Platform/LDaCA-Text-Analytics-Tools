@@ -41,12 +41,13 @@ for p in ./docframe ./ldaca_web_app/docworkspace ./ldaca_web_app/backend; do
 done
 
 echo "[postBuild] Installing local Python packages (docframe[cpu], docworkspace, backend)"
+pip install uv
 # Install docframe with its CPU extra first (provides torch CPU wheels) so subsequent builds reuse deps
-pip install "./docframe[cpu]"
+uv pip install "docframe[cpu]"
 # Install workspace library (depends on docframe)
-pip install "./ldaca_web_app/docworkspace"
+uv pip install ldaca_web_app/docworkspace
 # Install backend (depends on both)
-pip install "./ldaca_web_app/backend"
+uv pip install ldaca_web_app/backend
 echo "[postBuild] Local package installation complete"
 
 # Prefetch the Sentence-Transformers model used by BERTopic by default.

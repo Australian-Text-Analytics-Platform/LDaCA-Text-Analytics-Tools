@@ -20,23 +20,3 @@ members = [
 docframe = { workspace = true }
 docworkspace = { workspace = true }
 ldaca-web-app-backend = { workspace = true }
-
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = ["-ra", "--strict-markers", "--strict-config"]
-# Let pytest-asyncio handle async tests automatically across the workspace
-asyncio_mode = "auto"
-# Register common markers used across subpackages to silence warnings
-markers = [
-  "slow: marks tests as slow",
-  "integration: marks tests as integration tests",
-  "unit: marks tests as unit tests",
-  "workspace: marks tests related to workspace functionality",
-]
-# Filter warnings from external libraries we don't control
-filterwarnings = [
-  # spaCy/click deprecation in click 9.0 path (showing in spaCy and weasel)
-  "ignore:Importing parser.split_arg_string is deprecated:DeprecationWarning",
-  # sklearn future rename warning
-  "ignore:'force_all_finite' was renamed to 'ensure_all_finite':FutureWarning",
-]
