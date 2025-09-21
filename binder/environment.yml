@@ -2,8 +2,8 @@ name: ldaca-binder
 channels:
   - conda-forge
 dependencies:
-  - python=3.10
-  - nodejs=20
+  - python=3.12
+  - nodejs=22
   - pip
   # - pip:
   #     - fastapi[standard]>=0.115.14
