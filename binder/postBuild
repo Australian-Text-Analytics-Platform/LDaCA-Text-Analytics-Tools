@@ -4,13 +4,13 @@ set -euo pipefail
 # Ensure we are in repo root
 cd "$(dirname "$0")/.."
 
-# # Force CPU-only PyTorch wheels on Linux (repo2docker) while keeping PyPI for everything else.
-# # This ensures torch resolves from the CPU index, but other packages come from PyPI.
-# export PIP_INDEX_URL="https://download.pytorch.org/whl/cpu"
-# export PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
-# export PIP_PREFER_BINARY=1
-# echo "postBuild: PIP_INDEX_URL=$PIP_INDEX_URL"
-# echo "postBuild: PIP_EXTRA_INDEX_URL=$PIP_EXTRA_INDEX_URL"
+# Force CPU-only PyTorch wheels on Linux (repo2docker) while keeping PyPI for everything else.
+# This ensures torch resolves from the CPU index, but other packages come from PyPI.
+export PIP_INDEX_URL="https://download.pytorch.org/whl/cpu"
+export PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
+export PIP_PREFER_BINARY=1
+echo "postBuild: PIP_INDEX_URL=$PIP_INDEX_URL"
+echo "postBuild: PIP_EXTRA_INDEX_URL=$PIP_EXTRA_INDEX_URL"
 
 # Do NOT install backend as an editable package here; we rely on PYTHONPATH set in start
 # to import backend/docframe/docworkspace from the repo. Runtime deps are installed via environment.yml.
@@ -25,28 +25,9 @@ cd "$(dirname "$0")/.."
 # if [ -f "docworkspace/pyproject.toml" ]; then
 #   python -m pip install ./docworkspace
 # fi
-# python -m pip install ./docframe
-# python -m pip install ./docworkspace
-# python -m pip install ./ldaca_web_app/backend
-
-# Install local packages (non-editable) using path form to avoid invalid direct-reference syntax.
-# We avoid the "name @ ./path" form because pip expects a valid file URL when using '@'.
-# Path-based installs ensure correct resolution and extras work reliably.
-echo "[postBuild] Verifying local project directories exist"
-for p in ./docframe ./ldaca_web_app/docworkspace ./ldaca_web_app/backend; do
-  if [ ! -f "$p/pyproject.toml" ]; then
-    echo "[postBuild][ERROR] Missing pyproject.toml in $p" >&2
-    exit 1
-  fi
-done
-
-echo "[postBuild] Installing local Python packages (docframe[cpu], docworkspace, backend)"
-pip install uv
-# Install docframe with its CPU extra first (provides torch CPU wheels) so subsequent builds reuse deps
-uv pip install --system "./docframe[cpu]"
-uv pip install --system "./ldaca_web_app/docworkspace"
-uv pip install --system "./ldaca_web_app/backend"
-echo "[postBuild] Local package installation complete"
+python -m pip install ./docframe
+python -m pip install ./docworkspace
+python -m pip install ./ldaca_web_app/backend
 
 # Prefetch the Sentence-Transformers model used by BERTopic by default.
 # BERTopic defaults to "sentence-transformers/all-MiniLM-L6-v2" when no embedding_model is specified.
@@ -104,75 +85,75 @@ else
 HTML
 fi
 
-# # Prepare nginx prefix directories (user-space)
-# mkdir -p "$HOME/nginx/logs" "$HOME/nginx/run" "$HOME/nginx/tmp" \
-#          "$HOME/nginx/tmp/client_body" "$HOME/nginx/tmp/proxy_temp" \
-#          "$HOME/nginx/tmp/fastcgi_temp" "$HOME/nginx/tmp/uwsgi_temp" \
-#          "$HOME/nginx/tmp/scgi_temp"
+# Prepare nginx prefix directories (user-space)
+mkdir -p "$HOME/nginx/logs" "$HOME/nginx/run" "$HOME/nginx/tmp" \
+         "$HOME/nginx/tmp/client_body" "$HOME/nginx/tmp/proxy_temp" \
+         "$HOME/nginx/tmp/fastcgi_temp" "$HOME/nginx/tmp/uwsgi_temp" \
+         "$HOME/nginx/tmp/scgi_temp"
 
-# # Write a user-space nginx configuration (no root privileges required)
-# cat > "$HOME/nginx/nginx.conf" <<'NGINX'
-# worker_processes  1;
-# error_log  logs/error.log warn;
-# pid        run/nginx.pid;
+# Write a user-space nginx configuration (no root privileges required)
+cat > "$HOME/nginx/nginx.conf" <<'NGINX'
+worker_processes  1;
+error_log  logs/error.log warn;
+pid        run/nginx.pid;
 
-# events {
-#   worker_connections  1024;
-# }
+events {
+  worker_connections  1024;
+}
 
-# http {
-#   include       /etc/nginx/mime.types;
-#   default_type  application/octet-stream;
+http {
+  include       /etc/nginx/mime.types;
+  default_type  application/octet-stream;
 
-#   # All temp paths under user prefix
-#   client_body_temp_path tmp/client_body;
-#   proxy_temp_path       tmp/proxy_temp;
-#   fastcgi_temp_path     tmp/fastcgi_temp;
-#   uwsgi_temp_path       tmp/uwsgi_temp;
-#   scgi_temp_path        tmp/scgi_temp;
+  # All temp paths under user prefix
+  client_body_temp_path tmp/client_body;
+  proxy_temp_path       tmp/proxy_temp;
+  fastcgi_temp_path     tmp/fastcgi_temp;
+  uwsgi_temp_path       tmp/uwsgi_temp;
+  scgi_temp_path        tmp/scgi_temp;
 
-#   access_log    logs/access.log;
-#   sendfile        on;
-#   keepalive_timeout  65;
+  access_log    logs/access.log;
+  sendfile        on;
+  keepalive_timeout  65;
 
-#   server {
-#     listen 3000;
-#     server_name _;
+  server {
+    listen 3000;
+    server_name _;
 
-#     root   www;
-#     index  index.html index.htm;
+    root   www;
+    index  index.html index.htm;
 
-#     location / {
-#       try_files $uri $uri/ /index.html;
-#       add_header Cache-Control "no-cache, no-store, must-revalidate";
-#       add_header Pragma "no-cache";
-#       add_header Expires "0";
-#     }
+    location / {
+      try_files $uri $uri/ /index.html;
+      add_header Cache-Control "no-cache, no-store, must-revalidate";
+      add_header Pragma "no-cache";
+      add_header Expires "0";
+    }
 
-#     location /api/ {
-#       proxy_pass http://127.0.0.1:8001;
-#       proxy_set_header Host $host;
-#       proxy_set_header X-Real-IP $remote_addr;
-#       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#       proxy_set_header X-Forwarded-Proto $scheme;
+    location /api/ {
+      proxy_pass http://127.0.0.1:8001;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
 
-#       add_header Access-Control-Allow-Origin * always;
-#       add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
-#       add_header Access-Control-Allow-Headers "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization" always;
+      add_header Access-Control-Allow-Origin * always;
+      add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+      add_header Access-Control-Allow-Headers "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization" always;
 
-#       if ($request_method = 'OPTIONS') {
-#         return 204;
-#       }
-#     }
+      if ($request_method = 'OPTIONS') {
+        return 204;
+      }
+    }
 
-#     location /health {
-#       access_log off;
-#       return 200 "healthy\n";
-#       add_header Content-Type text/plain;
-#     }
-#   }
-# }
-# NGINX
+    location /health {
+      access_log off;
+      return 200 "healthy\n";
+      add_header Content-Type text/plain;
+    }
+  }
+}
+NGINX
 
 # Place content under the nginx prefix directory structure used by `nginx -p $HOME/nginx`
 mkdir -p "$HOME/nginx/www"
