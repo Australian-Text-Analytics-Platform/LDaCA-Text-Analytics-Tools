@@ -6,11 +6,11 @@ cd "$(dirname "$0")/.."
 
 # Force CPU-only PyTorch wheels on Linux (repo2docker) while keeping PyPI for everything else.
 # This ensures torch resolves from the CPU index, but other packages come from PyPI.
-export PIP_INDEX_URL="https://download.pytorch.org/whl/cpu"
-export PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
-export PIP_PREFER_BINARY=1
-echo "postBuild: PIP_INDEX_URL=$PIP_INDEX_URL"
-echo "postBuild: PIP_EXTRA_INDEX_URL=$PIP_EXTRA_INDEX_URL"
+# export PIP_INDEX_URL="https://download.pytorch.org/whl/cpu"
+# export PIP_EXTRA_INDEX_URL="https://pypi.org/simple"
+# export PIP_PREFER_BINARY=1
+# echo "postBuild: PIP_INDEX_URL=$PIP_INDEX_URL"
+# echo "postBuild: PIP_EXTRA_INDEX_URL=$PIP_EXTRA_INDEX_URL"
 
 # Do NOT install backend as an editable package here; we rely on PYTHONPATH set in start
 # to import backend/docframe/docworkspace from the repo. Runtime deps are installed via environment.yml.
@@ -26,9 +26,9 @@ echo "postBuild: PIP_EXTRA_INDEX_URL=$PIP_EXTRA_INDEX_URL"
 #   python -m pip install ./docworkspace
 # fi
 pip install uv
-uv pip install "./docframe[cpu]"
-uv pip install ./ldaca_web_app/docworkspace
-uv pip install ./ldaca_web_app/backend
+uv pip install --system "./docframe[cpu]"
+uv pip install --system ./ldaca_web_app/docworkspace
+uv pip install --system ./ldaca_web_app/backend
 
 # Prefetch the Sentence-Transformers model used by BERTopic by default.
 # BERTopic defaults to "sentence-transformers/all-MiniLM-L6-v2" when no embedding_model is specified.
