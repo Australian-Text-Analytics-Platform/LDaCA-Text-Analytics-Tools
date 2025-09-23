@@ -25,9 +25,10 @@ echo "postBuild: PIP_EXTRA_INDEX_URL=$PIP_EXTRA_INDEX_URL"
 # if [ -f "docworkspace/pyproject.toml" ]; then
 #   python -m pip install ./docworkspace
 # fi
-python -m pip install ./docframe
-python -m pip install ./ldaca_web_app/docworkspace
-python -m pip install ./ldaca_web_app/backend
+pip install uv
+uv pip install "./docframe[cpu]"
+uv pip install ./ldaca_web_app/docworkspace
+uv pip install ./ldaca_web_app/backend
 
 # Prefetch the Sentence-Transformers model used by BERTopic by default.
 # BERTopic defaults to "sentence-transformers/all-MiniLM-L6-v2" when no embedding_model is specified.
