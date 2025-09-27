@@ -29,6 +29,14 @@ else:
   print(f"[postBuild] Prefetching 'sentence-transformers/all-MiniLM-L6-v2' -> {cache}")
   SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2", cache_folder=cache)
   print("[postBuild] Model prefetched.")
+
+try:
+  import nltk
+  nltk.download("stopwords")
+  nltk.download("punkt")
+  nltk.download("punkt_tab")
+except Exception as e:
+  pass
 PY
 
 pushd ldaca_web_app/frontend
