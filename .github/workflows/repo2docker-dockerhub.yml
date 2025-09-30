@@ -124,6 +124,9 @@ jobs:
         GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
       run: |
         set -euo pipefail
+        # Get current branch name
+        CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
+        echo "Current branch: $CURRENT_BRANCH"
         # Collect submodule paths (if any) to stage pointer updates
         SUBMODULE_PATHS=""
         if [ -f .gitmodules ]; then
@@ -140,12 +143,12 @@ jobs:
         git commit -m "$COMMIT_MSG"
         attempts=5
         for i in $(seq 1 $attempts); do
-          echo "Attempt $i push..."
-          if git push origin HEAD:main; then
+          echo "Attempt $i push to $CURRENT_BRANCH..."
+          if git push origin HEAD:$CURRENT_BRANCH; then
             echo "Push succeeded"; exit 0; fi
-          echo "Initial/previous push failed, attempting to rebase onto origin/main and retry (attempt $i).";
+          echo "Initial/previous push failed, attempting to rebase onto origin/$CURRENT_BRANCH and retry (attempt $i).";
           git fetch origin
-          git rebase origin/main || { echo "Rebase failed; aborting."; git rebase --abort || true; exit 1; }
+          git rebase origin/$CURRENT_BRANCH || { echo "Rebase failed; aborting."; git rebase --abort || true; exit 1; }
           sleep $((3 * i))
         done
         echo "Failed to push after $attempts attempts"; exit 1
