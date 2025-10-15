@@ -4,7 +4,7 @@ applyTo: '**'
 # LDaCA Repository Instructions
 
 ## Project overview
-- LDaCA is a text analytics ecosystem: docframe (Polars-based text library) → docworkspace (graph of Nodes/Workspaces) → FastAPI backend → React frontend.
+- LDaCA is a text analytics ecosystem: docframe (Polars-based text library) → docworkspace (graph of Nodes/Workspaces) → FastAPI backend → React frontend. The LDaCA-Text-Analytics-Tools is a git repo containing all components, docframe and ldaca_web_app are both git submodules.
 - Goal: scalable, lazy-by-default text processing with a clean API boundary; frontend consumes JSON only.
 
 ## Folder structure (top-level)
