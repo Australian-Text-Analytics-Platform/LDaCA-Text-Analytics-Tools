@@ -10,7 +10,7 @@ applyTo: '**'
 ## Folder structure (top-level)
 - `docframe/` – Text analysis library (Polars backend, text namespace, DTM utilities).
   - `docs/ARCHITECTURE.md` – **Comprehensive architecture documentation** covering design philosophy, component breakdown, data flow patterns, function dependencies.
-- `docworkspace/` – Workspace graph, Node operations, serialization, FastAPI adapters.
+- `ldaca_web_app/docworkspace/` – Workspace graph, Node operations, serialization, FastAPI adapters.
 - `ldaca_web_app/backend/` – FastAPI app exposing workspace, files, text endpoints.
 - `ldaca_web_app/docs/ARCHITECTURE.md` – **Complete backend architecture documentation** covering all three components (docworkspace, backend, frontend), background task system, current-request/result persistence, complete file/function reference.
 - `ldaca_web_app/frontend/` – React app (TanStack Query, XYFlow) consuming backend JSON.
