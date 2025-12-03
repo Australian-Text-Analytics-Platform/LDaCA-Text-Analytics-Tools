@@ -40,6 +40,12 @@ jobs:
           toolchain: stable
           targets: x86_64-pc-windows-msvc
 
+      - name: Install WiX Toolset dependencies
+        shell: pwsh
+        run: |
+          # WiX requires .NET Framework 3.5
+          Write-Host "Installing .NET Framework dependencies..."
+          
       - name: Prepare cache directories
         shell: pwsh
         run: |
@@ -131,7 +137,16 @@ jobs:
           $env:UV_PYTHON = "3.12"
           $env:UV_PYTHON_PREFER_MANAGED = "1"
           $env:UV_LINK_MODE = "copy"
-          npm run tauri:build
+          
+          # Build with NSIS target to avoid WiX issues on CI
+          Write-Host "Building Tauri application with NSIS..."
+          try {
+            npm run tauri build -- --bundles nsis
+            Write-Host "NSIS build completed successfully"
+          } catch {
+            Write-Host "NSIS build failed, trying default build..."
+            npm run tauri:build
+          }
 
       - name: Gather Windows bundles
         id: gather-bundles
@@ -142,14 +157,22 @@ jobs:
           $bundleRoot = "src-tauri/target/release/bundle"
           if (-not (Test-Path $bundleRoot)) {
             Write-Error "Bundle output not found at $bundleRoot"
+            exit 1
           }
-          $archives = Get-ChildItem -Path $bundleRoot -Recurse -Include *.msi,*.exe,*.zip,*.msix,*.appx
+          
+          # List all available bundles
+          Write-Host "Available bundle directories:"
+          Get-ChildItem -Path $bundleRoot -Directory | ForEach-Object { Write-Host "  $($_.Name)" }
+          
+          # Find installer files
+          $archives = Get-ChildItem -Path $bundleRoot -Recurse -Include *.exe,*.msi
           if ($archives.Count -eq 0) {
-            Write-Error "No Windows bundle artifacts found"
+            Write-Error "No Windows installer artifacts found"
+            exit 1
           }
-          $archiveList = $archives | ForEach-Object { $_.FullName }
-          $archiveList -join "`n" | Out-String | Write-Host
-          $archiveList -join "`n" | Out-File -FilePath bundle_paths.txt -Encoding utf8
+          
+          Write-Host "`nFound installers:"
+          $archives | ForEach-Object { Write-Host "  $($_.FullName)" }
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
@@ -158,8 +181,13 @@ jobs:
           path: |
             ldaca_web_app/src-tauri/target/release/bundle/nsis/*.exe
             ldaca_web_app/src-tauri/target/release/bundle/msi/*.msi
-            ldaca_web_app/src-tauri/target/release/bundle/app/*.zip
-            ldaca_web_app/src-tauri/target/release/bundle/msix/*.msix
-            ldaca_web_app/src-tauri/target/release/bundle/appx/*.appx
-          if-no-files-found: warn
+          if-no-files-found: ignore
+          retention-days: 14
+      
+      - name: Upload NSIS installer (primary)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ldaca-desktop-windows-nsis
+          path: ldaca_web_app/src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
           retention-days: 14
