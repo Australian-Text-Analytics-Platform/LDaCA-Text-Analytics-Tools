@@ -9,8 +9,10 @@ applyTo: '**'
 
 ## Folder structure (top-level)
 - `docframe/` – Text analysis library (Polars backend, text namespace, DTM utilities).
-- `docworkspace/` – Workspace graph, Node operations, serialization, FastAPI adapters.
+  - `docs/ARCHITECTURE.md` – **Comprehensive architecture documentation** covering design philosophy, component breakdown, data flow patterns, function dependencies.
+- `ldaca_web_app/docworkspace/` – Workspace graph, Node operations, serialization, FastAPI adapters.
 - `ldaca_web_app/backend/` – FastAPI app exposing workspace, files, text endpoints.
+- `ldaca_web_app/docs/ARCHITECTURE.md` – **Complete backend architecture documentation** covering all three components (docworkspace, backend, frontend), background task system, current-request/result persistence, complete file/function reference.
 - `ldaca_web_app/frontend/` – React app (TanStack Query, XYFlow) consuming backend JSON.
 - `run.sh` – Dev bootstrap: installs deps (uv/npm), starts backend:8001 and frontend:3000.
 - `data/` – Local runtime data (ignored). Avoid hard-coding paths; use backend helpers.
@@ -52,3 +54,21 @@ applyTo: '**'
 
 ## When adding endpoints
 - Define Pydantic models; enforce auth (or explicit dev bypass); delegate to docworkspace; add tests (401 + happy path); ensure outputs are JSON-serializable.
+
+## Architecture documentation maintenance
+- **Before making changes**: Review relevant architecture documentation:
+  - `docframe/docs/ARCHITECTURE.md` – For docframe library changes (text namespace, utilities, core functions)
+  - `ldaca_web_app/docs/ARCHITECTURE.md` – For backend, frontend, or workspace changes
+- **After making changes**: Update architecture documentation to reflect:
+  - New functions/classes: Add to appropriate section with implementation details and external dependencies
+  - Modified APIs: Update endpoint descriptions, parameters, return types
+  - New patterns: Document data flow patterns with step-by-step explanations
+  - Background tasks: Update task system documentation if adding new task types
+  - Analysis endpoints: Update current-request/result pattern documentation
+  - File additions/removals: Update Complete Backend File Reference section
+- **Documentation style**: Follow existing patterns:
+  - Explain HOW implementations work (e.g., "calls X, wraps in Y, returns Z")
+  - Document WHAT external functions are called (e.g., "delegates to text_utils.tokenize()")
+  - Include code examples with clear comments
+  - Add architecture diagrams for complex flows
+  - Use "Example" headers (not "AI Tool Reuse Pattern") for code blocks
