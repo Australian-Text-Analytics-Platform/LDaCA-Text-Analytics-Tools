@@ -20,6 +20,13 @@ jobs:
       PYTHONIOENCODING: "utf-8"
 
     steps:
+      - name: Enable Windows long paths
+        shell: pwsh
+        run: |
+          # Enable long path support for Git and Windows
+          git config --global core.longpaths true
+          New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force -ErrorAction SilentlyContinue
+          
       - name: Checkout repository with submodules
         uses: actions/checkout@v4
         with:
@@ -104,6 +111,32 @@ jobs:
           $env:UV_PYTHON_PREFER_MANAGED = "1"
           $env:UV_LINK_MODE = "copy"
           uv run --python 3.12 python scripts/package_backend_runtime.py --clean
+
+      - name: Clean up PyTorch unnecessary files for Windows bundling
+        shell: pwsh
+        working-directory: ldaca_web_app/backend
+        run: |
+          Set-StrictMode -Version Latest
+          $runtimeDir = "dist-tauri\backend-runtime\python"
+          
+          # Remove CUDA headers and other unnecessary files to avoid path length issues
+          $patterns = @(
+            "Lib\site-packages\torch\include\**",
+            "Lib\site-packages\torch\share\**",
+            "Lib\site-packages\torch\test\**",
+            "Lib\site-packages\torch\bin\*.pdb",
+            "Lib\site-packages\torchvision\**\*.pdb",
+            "Lib\site-packages\**\tests\**",
+            "Lib\site-packages\**\test\**"
+          )
+          
+          foreach ($pattern in $patterns) {
+            $fullPattern = Join-Path $runtimeDir $pattern
+            Write-Host "Removing: $pattern"
+            Get-ChildItem -Path $fullPattern -Recurse -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          }
+          
+          Write-Host "Cleanup completed"
 
       - name: Install frontend dependencies
         shell: pwsh
