@@ -198,7 +198,7 @@ jobs:
           Get-ChildItem -Path $bundleRoot -Directory | ForEach-Object { Write-Host "  $($_.Name)" }
           
           # Find installer files
-          $archives = Get-ChildItem -Path $bundleRoot -Recurse -Include *.exe,*.msi
+          $archives = @(Get-ChildItem -Path $bundleRoot -Recurse -Include *.exe,*.msi -ErrorAction SilentlyContinue)
           if ($archives.Count -eq 0) {
             Write-Error "No Windows installer artifacts found"
             exit 1
