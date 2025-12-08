@@ -107,10 +107,31 @@ jobs:
         working-directory: ldaca_web_app
         run: npm run tauri:build  -- --bundles app,updater
 
-      - name: Upload macOS Apple Silicon App artifact
+      - name: Label DMG output for Apple Silicon
+        id: label-dmg
+        shell: bash
+        working-directory: ldaca_web_app
+        run: |
+          set -Eeuo pipefail
+          shopt -s nullglob
+          dmg_files=(src-tauri/target/release/bundle/dmg/*.dmg)
+          if [ ${#dmg_files[@]} -eq 0 ]; then
+            echo "No DMG output found" >&2
+            exit 1
+          fi
+          primary_dmg="${dmg_files[0]}"
+          labeled_dmg="src-tauri/target/release/bundle/dmg/ldaca-desktop-apple-silicon.dmg"
+          cp "$primary_dmg" "$labeled_dmg"
+          echo "path=$labeled_dmg" >> "$GITHUB_OUTPUT"
+          echo "Primary DMG: $primary_dmg"
+          echo "Labeled DMG: $labeled_dmg"
+
+      - name: Upload macOS Apple Silicon DMG artifact
         uses: actions/upload-artifact@v4
         with:
           name: ldaca-desktop-macos-apple-silicon
+          # path: ldaca_web_app/${{ steps.label-dmg.outputs.path }}
+          # if-no-files-found: error
           path: |
             ldaca_web_app/src-tauri/target/release/bundle/macos/*.app
             ldaca_web_app/src-tauri/target/release/bundle/macos/*.tar.gz
