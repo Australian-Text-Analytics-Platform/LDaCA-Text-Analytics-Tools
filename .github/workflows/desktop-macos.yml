@@ -95,7 +95,7 @@ jobs:
       - name: Build frontend
         shell: bash
         working-directory: ldaca_web_app/frontend
-        run: vite build
+        run: npx vite build
         #run: npm run build
 
       - name: Install root dependencies
