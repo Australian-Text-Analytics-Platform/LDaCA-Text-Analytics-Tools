@@ -105,7 +105,7 @@ jobs:
       - name: Build Tauri desktop application
         shell: bash
         working-directory: ldaca_web_app
-        run: npm run tauri:build
+        run: npm run tauri:build  -- --bundles app,updater
 
       - name: Label DMG output for Apple Silicon
         id: label-dmg
@@ -130,6 +130,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ldaca-desktop-macos-apple-silicon
-          path: ldaca_web_app/${{ steps.label-dmg.outputs.path }}
-          if-no-files-found: error
+          # path: ldaca_web_app/${{ steps.label-dmg.outputs.path }}
+          # if-no-files-found: error
+          path: |
+            ldaca_web_app/src-tauri/target/release/bundle/macos/*.app
+            ldaca_web_app/src-tauri/target/release/bundle/macos/*.tar.gz
+          if-no-files-found: warn
           retention-days: 14
