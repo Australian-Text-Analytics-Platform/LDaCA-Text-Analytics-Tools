@@ -8,6 +8,7 @@ dist/
 wheels/
 *.egg-info
 .python-version
+.pytest_cache/
 
 
 # Virtual environments
