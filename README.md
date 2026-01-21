@@ -8,5 +8,5 @@ LDaCA is a modular, end‑to‑end text analytics ecosystem: a Polars powered Py
 
 ## Launch Online App
 
-- Binder Demo (choose either one):
-  - [ARDC](https://binderhub.rc.nectar.org.au/v2/gh/Australian-Text-Analytics-Platform/LDaCA-Text-Analytics-Tools/main?labpath=LDaCa_Analysis.ipynb)
+- BinderHub Demo:
+  [![Binder](https://mybinder.org/badge_logo.svg)](https://binderhub.rc.nectar.org.au/v2/gh/Australian-Text-Analytics-Platform/LDaCA-Text-Analytics-Tools/main?labpath=LDaCa_Analysis.ipynb)
