@@ -20,5 +20,6 @@
 - Desktop builds run through `npm run desktop:dev` / `npm run desktop:build`, which wrap Vite + Tauri. They still expect an external backend on port 8001.
 - Follow the repo’s validation order for cross-cutting changes: docframe tests → backend `uv run pytest -q` → frontend `npm run type-check` (plus `npm run test` when present). Hidden CI assumes these commands.
 - Launch dev servers via the provided VS Code tasks (“Start Backend”, “Start Frontend”) to keep ports and environment variables aligned with the documentation.
+- The “Start Backend” and “Start Frontend” tasks are configured to auto-run on folder open; change their `runOptions.runOn` in `.vscode/tasks.json` if you need to opt out.
 - Install backend dependencies with `uv pip install -e .` inside `ldaca_web_app/backend` and frontend dependencies with root `npm install`. Avoid ad-hoc pip/venv workflows so your environment matches CI expectations.
 - Documentation is split by project: root docs live in `/docs`, DocFrame docs in `/docframe/docs`, backend docs in `/ldaca_web_app/backend/docs`, and frontend docs in `/ldaca_web_app/frontend/docs`. Keep READMEs short and link to the relevant docs entry points without duplicating deep details.
