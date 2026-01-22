@@ -14,4 +14,3 @@ wheels/
 # Virtual environments
 .venv
 uv.lock
-.worktrees/

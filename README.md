@@ -1,12 +1,14 @@
 # LDaCA - Language Data Commons of Australia
 
-LDaCA is a modular, end‑to‑end text analytics ecosystem: a Polars powered Python library for large‑scale document processing (`docframe`), a composable workspace graph layer (`docworkspace`), and a FastAPI + React web application for interactive exploration. The platform focuses on lazy, reproducible text pipelines, workspace serialization, and zero‑copy transitions from backend processing to frontend visualization.
+LDaCA is a modular, end‑to‑end text analytics ecosystem built around DocFrame (document‑aware DataFrames), DocWorkspace (graph‑based lineage), and a FastAPI + React web application for interactive analysis.
 
-## Documents
+## Start here
 
-- Web App Tutorial: See `ldaca_web_app/tutorial.md` for a beginner-friendly walkthrough of all features.
+- Platform docs: `docs/index.md`
+- DocFrame docs: `docframe/docs/index.md`
+- Backend docs: `ldaca_web_app/backend/docs/index.md`
+- Frontend docs: `ldaca_web_app/frontend/docs/index.md`
 
-## Launch Online App
+## Online demo
 
-- Demo:
-  - [![Binder](https://mybinder.org/badge_logo.svg)](https://binderhub.rc.nectar.org.au/v2/gh/Australian-Text-Analytics-Platform/LDaCA-Text-Analytics-Tools/dev?labpath=LDaCa_Analysis.ipynb)
+- [![Binder](https://mybinder.org/badge_logo.svg)](https://binderhub.rc.nectar.org.au/v2/gh/Australian-Text-Analytics-Platform/LDaCA-Text-Analytics-Tools/dev?labpath=LDaCa_Analysis.ipynb)
