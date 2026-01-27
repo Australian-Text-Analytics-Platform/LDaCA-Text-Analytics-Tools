@@ -2,8 +2,8 @@ name: ldaca-binder
 channels:
   - conda-forge
 dependencies:
-  - python=3.12
-  - nodejs=22
+  - python=3.14
+  - nodejs=24
   - pip
   - pip:
       - jupyter-server-proxy==4.1.2

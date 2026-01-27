@@ -8,6 +8,7 @@
 - Avoid `pytest .` from the repo root (Tauri bundles include upstream tests). Run backend tests with `uv run pytest -q` inside `ldaca_web_app/backend`, docframe tests via `pytest` or `python run_tests.py` in `/docframe`, and keep future frontend tests under `ldaca_web_app/frontend`.
 - Frontend (React 19 + Vite + TanStack Query v5 + Zustand + XYFlow) assumes the backend at `/api`. Runtime config comes from `VITE_BACKEND_API_BASE` or port auto-detection; no `.env` file is required for standard dev.
 - Frontend tutorial help lives in `ldaca_web_app/frontend/public/tutorials/*.md`, mapped by `frontend/src/tutorials/tutorialRegistry.ts`. Use `HelpIcon` (`frontend/src/components/help/HelpIcon.tsx`) to link UI controls to anchored tutorial sections; `TutorialView` scrolls and highlights anchors.
+- When adding Data Loader help items, keep keys and anchors aligned (e.g., `data-loader.workspace-manager.section` → `help-data-loader-workspace-manager` in `tutorials/data-loader.md`).
 - API clients live in `frontend/src/api`. Mirror backend response shapes (`workspace_to_react_flow` nodes/edges, `node_to_summary` payloads) and treat those as the single source of truth for row/column counts, lazy flags, and doc-wrapper badges.
 - Workspace interactions must stay lazy: use backend pagination endpoints (`/nodes/{id}/data`, `compute-column/preview`) instead of collecting large frames in routers or the UI. Persist eager results only after re-wrapping as `DocLazyFrame`.
 - Desktop shell (`src-tauri`) should keep delegating all data work over HTTP to the backend; don’t introduce platform-specific filesystem shortcuts that the web build can’t use.
@@ -22,4 +23,7 @@
 - Launch dev servers via the provided VS Code tasks (“Start Backend”, “Start Frontend”) to keep ports and environment variables aligned with the documentation.
 - The “Start Backend” and “Start Frontend” tasks are configured to auto-run on folder open; change their `runOptions.runOn` in `.vscode/tasks.json` if you need to opt out.
 - Install backend dependencies with `uv pip install -e .` inside `ldaca_web_app/backend` and frontend dependencies with root `npm install`. Avoid ad-hoc pip/venv workflows so your environment matches CI expectations.
+- Python minimum versions are unified at `>=3.14` across the monorepo; keep `requires-python` fields aligned when updating.
 - Documentation is split by project: root docs live in `/docs`, DocFrame docs in `/docframe/docs`, backend docs in `/ldaca_web_app/backend/docs`, and frontend docs in `/ldaca_web_app/frontend/docs`. Keep READMEs short and link to the relevant docs entry points without duplicating deep details.
+- When updating the tutorial index (`frontend/public/tutorials/index.md`), include a brief Overview section that describes the web app purpose and core capabilities.
+- Prefer general terms like "text data" in user-facing tutorials; avoid linguistics-specific terms like "corpora" unless explicitly required.
