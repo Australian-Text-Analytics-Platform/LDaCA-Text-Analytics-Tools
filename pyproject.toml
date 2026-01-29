@@ -12,11 +12,13 @@ dependencies = [
 [tool.uv.workspace]
 members = [
     "docframe",
-    "ldaca_web_app/docworkspace", 
-    "ldaca_web_app/backend"
+    "ldaca_web_app/docworkspace",
+    "ldaca_web_app/backend",
+    "ai_annotator"
 ]
 
 [tool.uv.sources]
 docframe = { workspace = true }
 docworkspace = { workspace = true }
 ldaca-web-app-backend = { workspace = true }
+classifier-fastapi = { workspace = true }
