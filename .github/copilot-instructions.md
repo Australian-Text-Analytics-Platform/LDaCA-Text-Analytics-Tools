@@ -3,7 +3,7 @@
 - `docframe` extends Polars; always wrap text tables in `DocDataFrame`/`DocLazyFrame`, lean on the `.text` namespace (tokenize, ngrams, describe), and avoid pandas conversions except at the I/O edges.
 - `docworkspace` persists every node lazily (metadata.json + polars-binary files under each workspace). Route new data through `stage_dataframe_as_lazy` so it reopens as a DocLazyFrame before being added to the graph.
 - FastAPI routers live under `backend/src/ldaca_web_app_backend/api`. Keep them thin adapters: parse JSON, call docworkspace/docframe helpers, serialize via `DocWorkspaceAPIUtils`, and expose *only* `/api/...` routes (legacy prefix-less paths are gone).
-- Background analyses (token frequencies, concordance, BERTopic, quotation extraction) always run via `ProcessTaskManager`. Return `state` + `metadata.task_id` so the Task Center can poll and cancel correctly.
+- Background analyses (token frequencies, concordance, BERTopic, quotation extraction) always run via `WorkerTaskManager`. Return `state` + `metadata.task_id` so the Task Manager can poll and cancel correctly.
 - Backend settings come from `.env` (`DATABASE_URL`, `USER_DATA_FOLDER`, OAuth flags, etc.). Never hardcode secrets; load them through the Pydantic Settings module in `config.py`. Local dev command: `uv run uvicorn ldaca_web_app_backend.main:app --reload --port 8001` with `PYTHONPATH=src`.
 - Avoid `pytest .` from the repo root (Tauri bundles include upstream tests). Run backend tests with `uv run pytest -q` inside `ldaca_web_app/backend`, docframe tests via `pytest` or `python run_tests.py` in `/docframe`, and keep future frontend tests under `ldaca_web_app/frontend`.
 - Frontend (React 19 + Vite + TanStack Query v5 + Zustand + XYFlow) assumes the backend at `/api`. Runtime config comes from `VITE_BACKEND_API_BASE` or port auto-detection; no `.env` file is required for standard dev.
@@ -27,3 +27,4 @@
 - Documentation is split by project: root docs live in `/docs`, DocFrame docs in `/docframe/docs`, backend docs in `/ldaca_web_app/backend/docs`, and frontend docs in `/ldaca_web_app/frontend/docs`. Keep READMEs short and link to the relevant docs entry points without duplicating deep details.
 - When updating the tutorial index (`frontend/public/tutorials/index.md`), include a brief Overview section that describes the web app purpose and core capabilities.
 - Prefer general terms like "text data" in user-facing tutorials; avoid linguistics-specific terms like "corpora" unless explicitly required.
+- When running commands like `uv XXX` or `vite` or `npm`, make sure you're in the correct subfolder (backend, frontend, docframe) so that those commands could be found.
