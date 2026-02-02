@@ -68,7 +68,7 @@
         {
             "label": "Compile Tauri App (MacOS)",
             "type": "shell",
-            "command": "npm run tauri:build",
+            "command": "npm run desktop:build:mac",
             "options": {
                 "cwd": "${workspaceFolder}/ldaca_web_app"
             },

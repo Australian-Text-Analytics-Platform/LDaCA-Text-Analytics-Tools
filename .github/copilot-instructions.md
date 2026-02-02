@@ -1,30 +1,22 @@
-## LDaCA Monorepo AI Guide
-- Platform comprises the Polars-based `docframe` library (`/docframe`), the workspace graph layer (`/ldaca_web_app/docworkspace`), and the FastAPI + React app (`/ldaca_web_app/backend`, `/ldaca_web_app/frontend`, `/ldaca_web_app/src-tauri`). Preserve document-column metadata end-to-end because the frontend renders whatever `DocWorkspaceAPIUtils` serializes.
-- `docframe` extends Polars; always wrap text tables in `DocDataFrame`/`DocLazyFrame`, lean on the `.text` namespace (tokenize, ngrams, describe), and avoid pandas conversions except at the I/O edges.
-- `docworkspace` persists every node lazily (metadata.json + polars-binary files under each workspace). Route new data through `stage_dataframe_as_lazy` so it reopens as a DocLazyFrame before being added to the graph.
-- FastAPI routers live under `backend/src/ldaca_web_app_backend/api`. Keep them thin adapters: parse JSON, call docworkspace/docframe helpers, serialize via `DocWorkspaceAPIUtils`, and expose *only* `/api/...` routes (legacy prefix-less paths are gone).
-- Background analyses (token frequencies, concordance, BERTopic, quotation extraction) always run via `WorkerTaskManager`. Return `state` + `metadata.task_id` so the Task Manager can poll and cancel correctly.
-- Backend settings come from `.env` (`DATABASE_URL`, `USER_DATA_FOLDER`, OAuth flags, etc.). Never hardcode secrets; load them through the Pydantic Settings module in `config.py`. Local dev command: `uv run uvicorn ldaca_web_app_backend.main:app --reload --port 8001` with `PYTHONPATH=src`.
-- Avoid `pytest .` from the repo root (Tauri bundles include upstream tests). Run backend tests with `uv run pytest -q` inside `ldaca_web_app/backend`, docframe tests via `pytest` or `python run_tests.py` in `/docframe`, and keep future frontend tests under `ldaca_web_app/frontend`.
-- Frontend (React 19 + Vite + TanStack Query v5 + Zustand + XYFlow) assumes the backend at `/api`. Runtime config comes from `VITE_BACKEND_API_BASE` or port auto-detection; no `.env` file is required for standard dev.
-- Frontend tutorial help lives in `ldaca_web_app/frontend/public/tutorials/*.md`, mapped by `frontend/src/tutorials/tutorialRegistry.ts`. Use `HelpIcon` (`frontend/src/components/help/HelpIcon.tsx`) to link UI controls to anchored tutorial sections; `TutorialView` scrolls and highlights anchors.
-- When adding Data Loader help items, keep keys and anchors aligned (e.g., `data-loader.workspace-manager.section` → `help-data-loader-workspace-manager` in `tutorials/data-loader.md`).
-- API clients live in `frontend/src/api`. Mirror backend response shapes (`workspace_to_react_flow` nodes/edges, `node_to_summary` payloads) and treat those as the single source of truth for row/column counts, lazy flags, and doc-wrapper badges.
-- Workspace interactions must stay lazy: use backend pagination endpoints (`/nodes/{id}/data`, `compute-column/preview`) instead of collecting large frames in routers or the UI. Persist eager results only after re-wrapping as `DocLazyFrame`.
-- Desktop shell (`src-tauri`) should keep delegating all data work over HTTP to the backend; don’t introduce platform-specific filesystem shortcuts that the web build can’t use.
-- User data lives under `ldaca_web_app/backend/data` (configurable via `USER_DATA_FOLDER`). Never commit contents of `data/`; access paths through helper utilities so future S3/GCS swaps are trivial.
-- Token-frequency persistence intentionally stores the full vocabulary; the frontend applies display limits locally. Stop-word filtering is purely a UI preference stored with the analysis metadata.
-- Binder/Colab environments proxy ports, so always build backend URLs with HTTPS + relative `/api` paths or the auto-detection helpers instead of `localhost` literals.
-- Build Polars expressions with the safe parser utilities when executing user-authored formulas (`compute-column`, filters) so invalid code can be rejected before touching the frames.
-- When adding docframe/docworkspace helpers, honor the lazy contract (accept eager if needed but return lazy) and set `document_column` metadata whenever possible so downstream analyses remain document-aware.
-- XYFlow workspaces expect deterministic node IDs; generate UUIDs when cloning nodes and persist them immediately to avoid frontend graph glitches.
-- Desktop builds run through `npm run desktop:dev` / `npm run desktop:build`, which wrap Vite + Tauri. They still expect an external backend on port 8001.
-- Follow the repo’s validation order for cross-cutting changes: docframe tests → backend `uv run pytest -q` → frontend `npm run type-check` (plus `npm run test` when present). Hidden CI assumes these commands.
-- Launch dev servers via the provided VS Code tasks (“Start Backend”, “Start Frontend”) to keep ports and environment variables aligned with the documentation.
-- The “Start Backend” and “Start Frontend” tasks are configured to auto-run on folder open; change their `runOptions.runOn` in `.vscode/tasks.json` if you need to opt out.
-- Install backend dependencies with `uv pip install -e .` inside `ldaca_web_app/backend` and frontend dependencies with root `npm install`. Avoid ad-hoc pip/venv workflows so your environment matches CI expectations.
-- Python minimum versions are unified at `>=3.14` across the monorepo; keep `requires-python` fields aligned when updating.
-- Documentation is split by project: root docs live in `/docs`, DocFrame docs in `/docframe/docs`, backend docs in `/ldaca_web_app/backend/docs`, and frontend docs in `/ldaca_web_app/frontend/docs`. Keep READMEs short and link to the relevant docs entry points without duplicating deep details.
-- When updating the tutorial index (`frontend/public/tutorials/index.md`), include a brief Overview section that describes the web app purpose and core capabilities.
-- Prefer general terms like "text data" in user-facing tutorials; avoid linguistics-specific terms like "corpora" unless explicitly required.
-- When running commands like `uv XXX` or `vite` or `npm`, make sure you're in the correct subfolder (backend, frontend, docframe) so that those commands could be found.
+## LDaCA Monorepo AI Guide (General)
+
+- The platform includes `docframe` (Polars-based), `docworkspace` (lazy workspace graph), and the FastAPI + React app (`ldaca_web_app/backend`, `ldaca_web_app/frontend`, `ldaca_web_app/src-tauri`). Preserve document-column metadata end-to-end because the UI renders what `DocWorkspaceAPIUtils` serializes.
+- `docframe` and `docworkspace` are lazy-first: wrap text tables in `DocDataFrame`/`DocLazyFrame`, route new data through `stage_dataframe_as_lazy`, and avoid eager collection except at I/O edges.
+- FastAPI routers live under `ldaca_web_app/backend/src/ldaca_web_app_backend/api` and must expose only `/api/...` routes; keep routers thin adapters and serialize via `DocWorkspaceAPIUtils`.
+- Background analyses always use `WorkerTaskManager` and return `state` plus `metadata.task_id` so the Task Manager can poll/cancel.
+- Config comes from `.env` via `config.py` (no hardcoded secrets). Backend dev run: `uv run uvicorn ldaca_web_app_backend.main:app --reload --port 8001` with `PYTHONPATH=src`.
+- Frontend assumes the backend at `/api` and uses `VITE_BACKEND_API_BASE` or auto-detection; avoid `localhost` literals (Binder/Colab proxy).
+- Workspace interactions must stay lazy; use pagination endpoints and preview APIs instead of collecting frames in routers or UI.
+- Tauri/Desktop shells delegate data work to the backend over HTTP; avoid platform-specific filesystem shortcuts.
+- User data lives under `ldaca_web_app/backend/data` (configurable via `USER_DATA_FOLDER`); never commit `data/` contents.
+- Tests: avoid `pytest .` at repo root. Run docframe tests in `/docframe`, backend tests in `ldaca_web_app/backend`, and frontend checks in `ldaca_web_app/frontend`.
+- Dependencies: `uv pip install -e .` in backend, `npm install` at `ldaca_web_app` root; keep node_modules only at the root. Python minimum is `>=3.14`.
+
+### Detailed instructions
+
+- `.github/instructions/python.instructions.md`
+- `.github/instructions/langchain-python.instructions.md`
+- `.github/instructions/playwright-python.instructions.md`
+- `.github/instructions/security-and-owasp.instructions.md`
+- `.github/instructions/performance-optimization.instructions.md`
+- `.github/instructions/ai-prompt-engineering-safety-best-practices.instructions.md`

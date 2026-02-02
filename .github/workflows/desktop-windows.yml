@@ -178,7 +178,7 @@ jobs:
             Write-Host "NSIS build completed successfully"
           } catch {
             Write-Host "NSIS build failed, trying default build..."
-            npm run tauri:build
+            npm run desktop:build:windows
           }
 
       - name: Gather Windows bundles
