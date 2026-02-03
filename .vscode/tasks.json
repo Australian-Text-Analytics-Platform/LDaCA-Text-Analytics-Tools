@@ -15,9 +15,6 @@
             },
             "problemMatcher": [],
             "isBackground": true,
-            "runOptions": {
-                "runOn": "folderOpen"
-            },
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -36,9 +33,6 @@
             },
             "problemMatcher": [],
             "isBackground": true,
-            "runOptions": {
-                "runOn": "folderOpen"
-            },
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -49,38 +43,22 @@
             }
         },
         {
-            "label": "Prepare backend (MacOS)",
-            "type": "shell",
-            "command": "uv run --python 3.12 python scripts/package_backend_runtime.py --clean",
-            "options": {
-                "cwd": "${workspaceFolder}/ldaca_web_app/backend"
-            },
-            "problemMatcher": [],
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
+        "label": "Start Backend Local",
+        "type": "shell",
+        "command": "${workspaceFolder}/.venv/bin/python",
+        "args": [
+            "-m", "uvicorn",
+            "ldaca_web_app_backend.main:app",
+            "--reload",
+            "--port", "8001"
+        ],
+        "options": {
+            "cwd": "${workspaceFolder}/ldaca_web_app/backend",
+            "env": {
+            "PYTHONPATH": "${workspaceFolder}/ldaca_web_app/backend/src"
             }
         },
-        {
-            "label": "Compile Tauri App (MacOS)",
-            "type": "shell",
-            "command": "npm run desktop:build:mac",
-            "options": {
-                "cwd": "${workspaceFolder}/ldaca_web_app"
-            },
-            "problemMatcher": [],
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            }
+        "isBackground": true
         }
     ]
 }
