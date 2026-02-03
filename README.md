@@ -5,7 +5,7 @@ LDaCA is a modular, end‑to‑end text analytics ecosystem built around DocFram
 ## Start here
 
 - Platform docs: `docs/index.md`
-- DocFrame docs: `docframe/docs/index.md`
+- DocFrame docs: `ldaca_web_app/backend/docframe/docs/index.md`
 - Backend docs: `ldaca_web_app/backend/docs/index.md`
 - Frontend docs: `ldaca_web_app/frontend/docs/index.md`
 

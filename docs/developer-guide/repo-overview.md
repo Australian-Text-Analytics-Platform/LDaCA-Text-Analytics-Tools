@@ -8,10 +8,10 @@
 
 **Answer:**
 
-- **DocFrame** (`docframe/`) — Python library for document‑aware data frames.
+- **DocFrame** (`ldaca_web_app/backend/docframe/`) — Python library for document‑aware data frames.
 - **Web app backend** (`ldaca_web_app/backend/`) — FastAPI service + workspace orchestration.
 - **Web app frontend** (`ldaca_web_app/frontend/`) — React UI + state management.
-- **DocWorkspace** (`ldaca_web_app/docworkspace/`) — graph‑based workspace layer used by the backend.
+- **DocWorkspace** (`ldaca_web_app/backend/docworkspace/`) — graph‑based workspace layer used by the backend.
 
 ## 2) How do the projects interact?
 
