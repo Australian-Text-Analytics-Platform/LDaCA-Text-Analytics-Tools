@@ -59,6 +59,38 @@
             }
         },
         "isBackground": true
+            "label": "Prepare backend (MacOS)",
+            "type": "shell",
+            "command": "uv run python scripts/package_backend_runtime.py --clean",
+            "options": {
+                "cwd": "${workspaceFolder}/ldaca_web_app/backend"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Compile Tauri App (MacOS)",
+            "type": "shell",
+            "command": "npm run desktop:build:mac",
+            "options": {
+                "cwd": "${workspaceFolder}/ldaca_web_app/frontend"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
         }
     ]
 }

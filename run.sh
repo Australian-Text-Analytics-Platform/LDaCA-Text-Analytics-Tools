@@ -79,10 +79,10 @@ print_success "Prerequisites check passed"
 
 # Get the script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-DOCFRAME_DIR="$SCRIPT_DIR/docframe"
 WEB_APP_DIR="$SCRIPT_DIR/ldaca_web_app"
-DOCWORKSPACE_DIR="$WEB_APP_DIR/docworkspace"
 BACKEND_DIR="$WEB_APP_DIR/backend"
+DOCFRAME_DIR="$BACKEND_DIR/docframe"
+DOCWORKSPACE_DIR="$BACKEND_DIR/docworkspace"
 FRONTEND_DIR="$WEB_APP_DIR/frontend"
 
 # Ensure Python can import our workspace packages from their src/ layouts.
@@ -116,10 +116,15 @@ then
 fi
 
 # Step 1: Install all workspace dependencies using uv workspace
-print_status "Installing LDaCA workspace dependencies..."
+print_status "Installing Backend workspace dependencies..."
+cd "$BACKEND_DIR"
+uv sync
+print_success "Backend dependencies installed"
+
+print_status "Installing Root workspace dependencies..."
 cd "$SCRIPT_DIR"
 uv sync
-print_success "All workspace dependencies installed"
+print_success "Root dependencies installed"
 
 # Step 2: Install frontend dependencies
 print_status "Installing frontend dependencies..."

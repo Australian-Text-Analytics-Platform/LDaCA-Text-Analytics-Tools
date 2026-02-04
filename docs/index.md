@@ -14,7 +14,7 @@
 
 **Answer:** Pick the path that matches your goal:
 
-- **DocFrame library** → `docframe/docs/index.md` for Python‑first text pipelines.
+- **DocFrame library** → `ldaca_web_app/backend/docframe/docs/index.md` for Python‑first text pipelines.
 - **Backend API** → `ldaca_web_app/backend/docs/index.md` for FastAPI and workspace orchestration.
 - **Frontend UI** → `ldaca_web_app/frontend/docs/index.md` for React UI and state flow.
 

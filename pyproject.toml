@@ -5,18 +5,8 @@ description = "LDaCA - Language Data Commons of Australia ecosystem for text ana
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "docframe",
     "ldaca-web-app-backend",
 ]
 
-[tool.uv.workspace]
-members = [
-    "docframe",
-    "ldaca_web_app/docworkspace", 
-    "ldaca_web_app/backend"
-]
-
 [tool.uv.sources]
-docframe = { workspace = true }
-docworkspace = { workspace = true }
-ldaca-web-app-backend = { workspace = true }
+ldaca-web-app-backend = { path = "ldaca_web_app/backend", editable = true }

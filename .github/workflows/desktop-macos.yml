@@ -29,7 +29,6 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: |
-            ldaca_web_app/package-lock.json
             ldaca_web_app/frontend/package-lock.json
 
       - name: Set up Rust toolchain
@@ -52,7 +51,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('ldaca_web_app/src-tauri/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('ldaca_web_app/frontend/src-tauri/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
@@ -60,7 +59,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.rustup
-          key: ${{ runner.os }}-rustup-${{ hashFiles('ldaca_web_app/src-tauri/Cargo.lock') }}
+          key: ${{ runner.os }}-rustup-${{ hashFiles('ldaca_web_app/frontend/src-tauri/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-rustup-
 
@@ -97,20 +96,15 @@ jobs:
         working-directory: ldaca_web_app/frontend
         run: npm run build
 
-      - name: Install root dependencies
-        shell: bash
-        working-directory: ldaca_web_app
-        run: npm install
-
       - name: Build Tauri desktop application
         shell: bash
-        working-directory: ldaca_web_app
+        working-directory: ldaca_web_app/frontend
         run: npm run desktop:build:mac
 
       - name: Label DMG output for Apple Silicon
         id: label-dmg
         shell: bash
-        working-directory: ldaca_web_app
+        working-directory: ldaca_web_app/frontend
         run: |
           set -Eeuo pipefail
           shopt -s nullglob
@@ -130,6 +124,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ldaca-desktop-macos-apple-silicon
-          path: ldaca_web_app/${{ steps.label-dmg.outputs.path }}
+          path: ldaca_web_app/frontend/${{ steps.label-dmg.outputs.path }}
           if-no-files-found: error
           retention-days: 14
