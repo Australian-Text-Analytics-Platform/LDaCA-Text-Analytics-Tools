@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 pip install uv
-uv pip install --system "./ldaca_web_app/backend/docframe[cpu]"
+uv pip install --system "./docframe[cpu]"
 uv pip install --system ./ldaca_web_app/backend/docworkspace
 uv pip install --system ./ldaca_web_app/backend
 
