@@ -5,9 +5,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 pip install uv
-uv pip install --system "./docframe[cpu]"
-uv pip install --system ./ldaca_web_app/docworkspace
-uv pip install --system ./ldaca_web_app/backend
+
+# Install backend workspace dependencies from the pinned lockfile
+# into Binder's existing conda environment.
+pushd ldaca_web_app/backend
+UV_PROJECT_ENVIRONMENT=/srv/conda/envs/notebook uv sync --frozen --no-dev
+popd
 
 # Prefetch the Sentence-Transformers model used by BERTopic by default.
 # BERTopic defaults to "sentence-transformers/all-MiniLM-L6-v2" when no embedding_model is specified.
