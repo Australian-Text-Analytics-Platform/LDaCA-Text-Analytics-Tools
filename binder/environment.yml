@@ -6,4 +6,4 @@ dependencies:
   - nodejs=24
   - pip
   - pip:
-      - jupyter-server-proxy==4.1.2
+      - uv

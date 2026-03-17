@@ -4,7 +4,6 @@ set -euo pipefail
 # Ensure we are in repo root
 cd "$(dirname "$0")/.."
 
-pip install uv
 uv pip install --system ./ldaca_web_app/ldaca-tabulator
 uv pip install --system ./ldaca_web_app/polars-text
 uv pip install --system ./ldaca_web_app/docworkspace
