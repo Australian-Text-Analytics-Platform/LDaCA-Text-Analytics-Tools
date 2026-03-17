@@ -1,14 +1,20 @@
-# LDaCA - Language Data Commons of Australia
+# LDaCA Binder
 
-LDaCA is a modular, end‑to‑end text analytics ecosystem built around DocFrame (document‑aware DataFrames), DocWorkspace (graph‑based lineage), and a FastAPI + React web application for interactive analysis.
+This repository is the Binder wrapper for the LDaCA web application. The application source now lives in the `ldaca_web_app` submodule; the root repository keeps only the files needed to build and launch the Binder environment.
 
-## Start here
+## Repository layout
 
-- Platform docs: `docs/index.md`
-- DocFrame docs: `ldaca_web_app/backend/docframe/docs/index.md`
-- Backend docs: `ldaca_web_app/backend/docs/index.md`
-- Frontend docs: `ldaca_web_app/frontend/docs/index.md`
+- `binder/` contains the repo2docker environment and post-build setup.
+- `ldaca_web_app/` is the application submodule that provides the backend, frontend, and desktop code.
+- `ldaca_web_app_launch.ipynb` is the Binder notebook entry point for starting the app inside Jupyter.
 
-## Online demo
+## Binder launch
 
-- [![Binder](https://mybinder.org/badge_logo.svg)](https://binderhub.rc.nectar.org.au/v2/gh/Australian-Text-Analytics-Platform/LDaCA-Text-Analytics-Tools/dev?labpath=LDaCa_Analysis.ipynb)
+- [![Binder](https://mybinder.org/badge_logo.svg)](https://binderhub.rc.nectar.org.au/v2/gh/Australian-Text-Analytics-Platform/ldaca_web_app_binder/main?labpath=ldaca_web_app_launch.ipynb)
+
+## Local maintenance
+
+- Initialize nested submodules with `git submodule update --init --recursive` before syncing the local environment.
+- Sync the Binder wrapper environment with `uv sync`.
+- Update the application code in `ldaca_web_app/`, not from the repository root.
+- Keep root-level documentation and automation Binder-specific; application docs live in the submodule.

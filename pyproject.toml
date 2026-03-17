@@ -1,11 +1,12 @@
 [project]
-name = "ldaca"
+name = "ldaca-web-app-binder"
 version = "0.1.0"
-description = "LDaCA - Language Data Commons of Australia ecosystem for text analysis"
+description = "Binder wrapper for the LDaCA web application"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "ldaca-web-app-backend",
+	"ipykernel>=7.2.0",
+	"ldaca-web-app-backend",
 ]
 
 [tool.uv.sources]
