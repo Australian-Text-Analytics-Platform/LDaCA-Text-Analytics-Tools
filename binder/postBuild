@@ -7,6 +7,27 @@ cd "$(dirname "$0")/.."
 UV_PROJECT_ENVIRONMENT=/srv/conda/envs/notebook uv sync --frozen --no-dev
 
 pushd ldaca_web_app
-npm ci
+npm ci --no-audit --no-fund
 npm run build -w frontend -- --outDir ../build
 popd
+
+rm -rf \
+	ldaca_web_app/node_modules \
+	ldaca_web_app/frontend/node_modules \
+	target \
+	ldaca_web_app/target \
+	ldaca_web_app/frontend/src-tauri/target \
+	"$HOME/.npm" \
+	"$HOME/.cache/uv" \
+	"$HOME/.cache/pip" \
+	"$HOME/.cargo/registry" \
+	"$HOME/.cargo/git"
+
+find . \( \
+	-name '__pycache__' -o \
+	-name '.pytest_cache' -o \
+	-name '.ruff_cache' -o \
+	-name '.mypy_cache' \
+\) -prune -exec rm -rf {} +
+
+conda clean -afy || true
