@@ -7,8 +7,9 @@ requires-python = ">=3.14"
 dependencies = [
 	"ipykernel>=7.2.0",
 	"jupyter-server-proxy>=4.4.0",
-	"ldaca-web-app-backend",
+	"ldaca-loader",
+	"ldaca-web-app-backend>=0.2.0",
 ]
 
 [tool.uv.sources]
-ldaca-web-app-backend = { path = "ldaca_web_app/backend", editable = true }
+ldaca-loader = { git = "https://github.com/Australian-Text-Analytics-Platform/ldaca-tabulator", branch = "ldaca_web_app_integration" }

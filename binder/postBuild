@@ -16,15 +16,9 @@ conda remove -y nodejs || true
 rm -rf \
 	ldaca_web_app/node_modules \
 	ldaca_web_app/frontend/node_modules \
-	target \
-	ldaca_web_app/target \
-	ldaca_web_app/frontend/src-tauri/target \
-	"$HOME/.rustup" \
-	"$HOME/.cargo" \
 	"$HOME/.npm" \
 	"$HOME/.cache/uv" \
-	"$HOME/.cache/pip" \
-	"$HOME/.cache/maturin"
+	"$HOME/.cache/pip"
 
 find . \( \
 	-name '__pycache__' -o \

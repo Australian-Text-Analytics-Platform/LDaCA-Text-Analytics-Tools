@@ -10,7 +10,7 @@ jobs:
     if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.1
         with:
           fetch-depth: 0
           submodules: recursive
@@ -18,8 +18,6 @@ jobs:
       - name: Confirm checked-out submodule pointers
         run: |
           set -euo pipefail
-          git submodule sync --recursive
-          git submodule update --init --recursive
           echo "Using submodule commits pinned by this repository:"; git submodule status --recursive
 
       - name: Back up and remove binder/Dockerfile for CI build
@@ -40,7 +38,7 @@ jobs:
 
       - name: Build and push with repo2docker (Docker Hub)
         id: r2d
-        uses: jupyterhub/repo2docker-action@master
+        uses: jupyterhub/repo2docker-action@0.3
         with:
           DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -66,33 +64,35 @@ jobs:
           echo "Updated FROM in binder/Dockerfile to $IMAGE_REF"
       - name: Append submodule hashes and commit URLs to Dockerfile
         run: |
-          # Truncate Dockerfile to only keep header and FROM line
           if grep -q '^FROM ' binder/Dockerfile; then
             sed -n '1,/^FROM /p' binder/Dockerfile > binder/Dockerfile.__trim && mv binder/Dockerfile.__trim binder/Dockerfile
           fi
+
           ts=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
           echo "# Submodule hashes and commit URLs for this build (generated at $ts UTC, parent repo $GITHUB_SHA)" >> binder/Dockerfile
+
           if [ -f .gitmodules ]; then
-            echo "# (Debug) Listing submodule pointers from git ls-tree:" >> binder/Dockerfile
-            git ls-tree HEAD | grep commit || true >> binder/Dockerfile
             for submodule in $(git config --file .gitmodules --get-regexp path | awk '{print $2}'); do
               url=$(git config -f .gitmodules submodule.$submodule.url || echo "UNKNOWN_URL")
-              # Get recorded pointer SHA from index/tree (works even if submodule not initialized)
               pointer=$(git ls-tree HEAD "$submodule" 2>/dev/null | awk '{print $3}')
+
               if [ -z "$pointer" ]; then
-                # Fallback: try looking at working tree if initialized
                 pointer=$(git -C "$submodule" rev-parse HEAD 2>/dev/null || echo "UNKNOWN_HASH")
               fi
+
               if [ "$pointer" != "UNKNOWN_HASH" ] && [ -n "$pointer" ]; then
                 pointer_short=${pointer:0:12}
               else
                 pointer_short=$pointer
               fi
+
               norm_url=$url
+
               case "$norm_url" in
                 git@github.com:*) norm_url=https://github.com/$(echo "$norm_url" | sed 's#git@github.com:##; s#\.git$##');;
                 *.git) norm_url=$(echo "$norm_url" | sed 's#\.git$##');;
               esac
+
               if echo "$norm_url" | grep -q '^https://github.com/'; then
                 if [ "$pointer" = "UNKNOWN_HASH" ] || [ -z "$pointer" ]; then
                   echo "# $submodule: (could not determine commit) $norm_url" >> binder/Dockerfile
