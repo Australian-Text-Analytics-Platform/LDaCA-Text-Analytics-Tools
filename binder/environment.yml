@@ -7,3 +7,5 @@ dependencies:
   - pip
   - pip:
       - uv
+      - jupyterhub-singleuser
+      - jupyter-server-proxy
