@@ -4,7 +4,7 @@ set -euo pipefail
 # Ensure we are in repo root
 cd "$(dirname "$0")/.."
 
-UV_PROJECT_ENVIRONMENT=/srv/conda/envs/notebook uv sync --frozen --no-dev
+UV_PROJECT_ENVIRONMENT=/srv/conda/envs/notebook uv sync --locked --no-dev
 
 pushd ldaca_web_app
 npm ci --no-audit --no-fund

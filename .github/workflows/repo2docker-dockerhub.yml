@@ -20,6 +20,17 @@ jobs:
           set -euo pipefail
           echo "Using submodule commits pinned by this repository:"; git submodule status --recursive
 
+      - name: Set up Python for lock validation
+        uses: actions/setup-python@v6.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        run: python -m pip install --upgrade uv
+
+      - name: Validate locked dependency sync
+        run: uv sync --locked --no-dev
+
       - name: Back up and remove binder/Dockerfile for CI build
         run: |
           if [ -f binder/Dockerfile ]; then

@@ -9,7 +9,14 @@ dependencies = [
 	"jupyter-server-proxy>=4.4.0",
 	"ldaca-loader",
 	"ldaca-web-app-backend>=0.2.0",
+	"torch",
 ]
 
 [tool.uv.sources]
 ldaca-loader = { git = "https://github.com/Australian-Text-Analytics-Platform/ldaca-tabulator", branch = "ldaca_web_app_integration" }
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
