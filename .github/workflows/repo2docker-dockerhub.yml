@@ -31,11 +31,10 @@ jobs:
       - name: Validate locked dependency sync
         run: uv sync --locked --no-dev
 
-      - name: Back up and remove binder/Dockerfile for CI build
+      - name: Remove binder/Dockerfile for CI build
         run: |
           if [ -f binder/Dockerfile ]; then
-            echo "Backing up binder/Dockerfile then removing for CI build so repo2docker copies repo contents"
-            cp binder/Dockerfile binder/Dockerfile.ci.bak
+            echo "Removing generated binder/Dockerfile so repo2docker builds from repository contents"
             rm -f binder/Dockerfile
           fi
 
@@ -63,22 +62,13 @@ jobs:
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
           echo "IMAGE_REF=${{ secrets.DOCKERHUB_USERNAME }}/$REPO_NAME_LC:$SHORT_SHA" >> $GITHUB_ENV
 
-      - name: Restore binder/Dockerfile and update FROM tag (preserve COPY lines)
+      - name: Create binder/Dockerfile from built image
         run: |
-          if [ -f binder/Dockerfile.ci.bak ]; then
-            mv -f binder/Dockerfile.ci.bak binder/Dockerfile
-          else
-            echo "# Github Action Built Image" > binder/Dockerfile
-            echo "FROM $IMAGE_REF" >> binder/Dockerfile
-          fi
-          sed -E -i '1,/^FROM / s|^FROM .*$|FROM '"$IMAGE_REF"'|' binder/Dockerfile
-          echo "Updated FROM in binder/Dockerfile to $IMAGE_REF"
+          printf '# Github Action Built Image.\nFROM %s\n' "$IMAGE_REF" > binder/Dockerfile
+          echo "Created binder/Dockerfile with base image $IMAGE_REF"
+
       - name: Append submodule hashes and commit URLs to Dockerfile
         run: |
-          if grep -q '^FROM ' binder/Dockerfile; then
-            sed -n '1,/^FROM /p' binder/Dockerfile > binder/Dockerfile.__trim && mv binder/Dockerfile.__trim binder/Dockerfile
-          fi
-
           ts=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
           echo "# Submodule hashes and commit URLs for this build (generated at $ts UTC, parent repo $GITHUB_SHA)" >> binder/Dockerfile
 
